@@ -1,4 +1,6 @@
 import { useEffect, useSyncExternalStore } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 
 export type Cupom = { id: string; codigo: string; descricao: string };
 
@@ -215,6 +217,13 @@ export function setData(updater: (d: HubData) => HubData) {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
   }
   listeners.forEach((l) => l());
+  void supabase
+    .from("site_content")
+    .update({ content: next as unknown as Json })
+    .eq("id", "main")
+    .then(({ error }) => {
+      if (error) console.error("Não foi possível salvar o conteúdo no Cloud:", error.message);
+    });
 }
 
 function subscribe(cb: () => void) {
@@ -226,11 +235,21 @@ function subscribe(cb: () => void) {
 export function useHubData(): HubData {
   const data = useSyncExternalStore(subscribe, read, () => DEFAULT_DATA);
   useEffect(() => {
-    // garante rehidratação após o mount (localStorage só existe no cliente)
-    if (cache === null) {
-      read();
-      listeners.forEach((l) => l());
-    }
+    let ativo = true;
+    void supabase
+      .from("site_content")
+      .select("content")
+      .eq("id", "main")
+      .single()
+      .then(({ data: row, error }) => {
+        if (!ativo || error || !row) return;
+        cache = { ...DEFAULT_DATA, ...(row.content as unknown as HubData) };
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(cache));
+        listeners.forEach((l) => l());
+      });
+    return () => {
+      ativo = false;
+    };
   }, []);
   return data;
 }
