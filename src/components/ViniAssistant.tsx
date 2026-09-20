@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Send } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { ICON_LIBRARY } from "@/lib/icon-library";
 import { setData, slugify, uid, type HubData } from "@/lib/hub-data";
 import vini3d from "@/assets/vini-3d.png";
@@ -252,9 +253,9 @@ export function ViniAssistant() {
           placeholder="Ex.: criar categoria Perfumes icone perfumes"
           className="flex-1 rounded-xl border border-glass-border bg-white/70 px-3 py-2.5 text-[13px] outline-none focus:ring-2 focus:ring-ring/40"
         />
-        <button className="grid size-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand to-cyan text-primary-foreground transition active:scale-95">
+        <Button type="submit" size="icon" aria-label="Enviar mensagem" className="size-11 shrink-0 rounded-xl bg-gradient-to-br from-brand to-cyan">
           <Send className="size-4" />
-        </button>
+        </Button>
       </form>
     </div>
   );

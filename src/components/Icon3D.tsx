@@ -28,14 +28,14 @@ export function Icon3D({
   return (
     <span
       className={cn(
-        "relative grid size-11 place-items-center overflow-hidden rounded-2xl bg-gradient-to-br text-white shadow-pop",
+        "icon-3d relative grid size-11 place-items-center overflow-hidden rounded-2xl bg-gradient-to-br text-primary-foreground shadow-pop",
         gradient,
         className,
       )}
-      style={{ boxShadow: "0 8px 18px -6px rgba(30,27,75,0.45)" }}
     >
-      <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 rounded-b-[100%] bg-white/30" />
-      <Icon className={cn("relative size-5", iconClassName)} strokeWidth={2.4} />
+      <span className="pointer-events-none absolute inset-x-1 top-0 h-[42%] rounded-b-[100%] bg-background/35" />
+      <span className="pointer-events-none absolute inset-x-2 bottom-0 h-2 rounded-full bg-ink/20 blur-sm" />
+      <Icon className={cn("relative size-5 drop-shadow-md", iconClassName)} strokeWidth={2.6} />
     </span>
   );
 }

@@ -2,11 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useHubData, type Loja } from "@/lib/hub-data";
 import { Icon3D } from "@/components/Icon3D";
-import { PageShell, SiteFooter, SiteHeader } from "@/components/SiteChrome";
+import { PageShell, SiteFooter } from "@/components/SiteChrome";
 import { StoreCard } from "@/components/StoreCard";
 import { CouponDialog } from "@/components/CouponDialog";
 import perfilFoto from "@/assets/perfil.jpg";
-import vini3d from "@/assets/vini-3d.png";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -34,9 +33,7 @@ function Home() {
 
   return (
     <PageShell>
-      <SiteHeader />
-
-      <section className="glass-panel mt-4 flex items-center gap-3 rounded-2xl p-3.5">
+      <section className="glass-panel flex items-center gap-3 rounded-2xl p-3.5">
         <img
           src={perfilFoto}
           alt={data.perfil.nome}
@@ -85,14 +82,6 @@ function Home() {
           </div>
         </section>
       ) : null}
-
-      <Link to="/admin" className="glass-panel mt-5 flex items-center gap-3 rounded-2xl p-3">
-        <img src={vini3d} alt="Vini" width={48} height={48} loading="lazy" className="size-12 shrink-0 object-contain" />
-        <span className="min-w-0 flex-1">
-          <span className="block font-display text-[13px] font-semibold">Vini · Assistente de IA</span>
-          <span className="block text-[12px] text-ink/55">Cuida do painel: categorias, lojas e cupons.</span>
-        </span>
-      </Link>
 
       <SiteFooter />
       <CouponDialog loja={lojaAberta} onOpenChange={(o) => !o && setLojaAberta(null)} />

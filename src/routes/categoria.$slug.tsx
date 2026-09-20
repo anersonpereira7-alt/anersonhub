@@ -3,7 +3,7 @@ import { useState } from "react";
 import { ArrowLeft, Info } from "lucide-react";
 import { categoriaPorSlug, lojasDaCategoria, useHubData, type Loja } from "@/lib/hub-data";
 import { Icon3D } from "@/components/Icon3D";
-import { PageShell, SiteFooter, SiteHeader } from "@/components/SiteChrome";
+import { PageShell, SiteFooter } from "@/components/SiteChrome";
 import { StoreCard } from "@/components/StoreCard";
 import { CouponDialog } from "@/components/CouponDialog";
 import { AgeGate } from "@/components/AgeGate";
@@ -36,7 +36,6 @@ function CategoriaPage() {
   if (!categoria || !categoria.ativa) {
     return (
       <PageShell>
-        <SiteHeader />
         <div className="glass-panel mt-6 rounded-2xl p-6 text-center">
           <p className="font-display text-lg font-bold">Categoria indisponível</p>
           <Link to="/" className="mt-3 inline-block text-sm font-semibold text-brand">
@@ -52,8 +51,6 @@ function CategoriaPage() {
 
   return (
     <PageShell>
-      <SiteHeader />
-
       {categoria.restrita && idadeOk && categoria.aviso ? (
         <div className="mt-4 flex items-start gap-2 rounded-2xl border border-brand/30 bg-brand/10 p-3 text-[12px] font-medium text-ink/75">
           <Info className="mt-0.5 size-4 shrink-0 text-brand" />
