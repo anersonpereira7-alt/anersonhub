@@ -563,10 +563,45 @@ function Textos() {
 }
 
 function Perfil() {
-  const { perfil, admin } = useHubData();
+  const { perfil } = useHubData();
   const [p, setP] = useState(perfil);
+  const [nomeAdmin, setNomeAdmin] = useState("");
+  const [fotoAdmin, setFotoAdmin] = useState("");
+  const [senhaAtual, setSenhaAtual] = useState("");
   const [novaSenha, setNovaSenha] = useState("");
   const [msg, setMsg] = useState("");
+
+  useEffect(() => {
+    void (async () => {
+      const { data: auth } = await supabase.auth.getUser();
+      if (!auth.user) return;
+      const { data } = await supabase.from("profiles").select("display_name, avatar_url").eq("id", auth.user.id).maybeSingle();
+      if (data) {
+        setNomeAdmin(data.display_name);
+        setFotoAdmin(data.avatar_url ?? "");
+      }
+    })();
+  }, []);
+
+  async function salvarPerfilAdmin() {
+    const { data: auth } = await supabase.auth.getUser();
+    if (!auth.user) return;
+    const { error } = await supabase.from("profiles").upsert({ id: auth.user.id, display_name: nomeAdmin, avatar_url: fotoAdmin || null });
+    setMsg(error ? "Não foi possível salvar o perfil." : "Perfil do administrador salvo.");
+  }
+
+  async function alterarSenha() {
+    if (!senhaAtual || novaSenha.length < 6) {
+      setMsg("Informe a senha atual e uma nova senha com ao menos 6 caracteres.");
+      return;
+    }
+    const { error } = await supabase.auth.updateUser({ password: novaSenha, current_password: senhaAtual });
+    setMsg(error ? "A senha atual está incorreta ou a nova senha não foi aceita." : "Senha alterada com sucesso.");
+    if (!error) {
+      setSenhaAtual("");
+      setNovaSenha("");
+    }
+  }
 
   return (
     <>
@@ -588,8 +623,21 @@ function Perfil() {
       </div>
 
       <div className="glass-panel space-y-2 rounded-2xl p-4">
-        <p className="font-display text-sm font-semibold">Acesso do admin</p>
-        <p className="text-[12px] text-ink/55">Usuário atual: {admin.usuario}</p>
+        <p className="font-display text-sm font-semibold">Perfil do administrador</p>
+        <input className={campo} placeholder="Nome de exibição" value={nomeAdmin} onChange={(e) => setNomeAdmin(e.target.value)} />
+        <input className={campo} placeholder="Link da foto (opcional)" value={fotoAdmin} onChange={(e) => setFotoAdmin(e.target.value)} />
+        <Button onClick={salvarPerfilAdmin} className={`${botao} h-auto w-full`}>Salvar perfil do administrador</Button>
+      </div>
+
+      <div className="glass-panel space-y-2 rounded-2xl p-4">
+        <p className="font-display text-sm font-semibold">Alterar senha</p>
+        <input
+          className={campo}
+          type="password"
+          placeholder="Senha atual"
+          value={senhaAtual}
+          onChange={(e) => setSenhaAtual(e.target.value)}
+        />
         <input
           className={campo}
           type="password"
@@ -597,20 +645,9 @@ function Perfil() {
           value={novaSenha}
           onChange={(e) => setNovaSenha(e.target.value)}
         />
-        <button
-          onClick={() => {
-            if (novaSenha.length < 6) {
-              setMsg("A senha precisa ter ao menos 6 caracteres.");
-              return;
-            }
-            setData((d) => ({ ...d, admin: { ...d.admin, senha: novaSenha } }));
-            setNovaSenha("");
-            setMsg("Senha alterada com sucesso.");
-          }}
-          className={`${botao} w-full`}
-        >
+        <Button onClick={alterarSenha} className={`${botao} h-auto w-full`}>
           Alterar senha
-        </button>
+        </Button>
         {msg ? <p className="text-[12px] font-medium text-ink/60">{msg}</p> : null}
       </div>
     </>
