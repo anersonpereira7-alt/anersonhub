@@ -32,10 +32,10 @@ export function SiteFooter() {
   );
 }
 
-export function PageShell({ children }: { children: React.ReactNode }) {
+export function PageShell({ children, wide = false }: { children: React.ReactNode; wide?: boolean }) {
   return (
     <div className="relative min-h-screen overflow-x-hidden text-ink">
-      <div className="relative mx-auto w-full max-w-[430px] px-4 pb-12 pt-4 sm:max-w-2xl">{children}</div>
+      <div className={wide ? "relative mx-auto w-full max-w-6xl px-4 pb-12 pt-4" : "relative mx-auto w-full max-w-[430px] px-4 pb-12 pt-4 sm:max-w-2xl"}>{children}</div>
     </div>
   );
 }
