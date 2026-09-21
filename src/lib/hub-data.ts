@@ -34,7 +34,6 @@ export type HubData = {
   lojas: Loja[];
   redes: RedeSocial[];
   textos: { termos: string; privacidade: string };
-  admin: { usuario: string; senha: string };
 };
 
 const STORAGE_KEY = "hub-afiliado-v1";
@@ -188,7 +187,6 @@ export const DEFAULT_DATA: HubData = {
     privacidade:
       "Não coletamos dados pessoais sensíveis. Podemos usar métricas anônimas de navegação para melhorar o site. Ao acessar lojas parceiras, seus dados passam a ser tratados conforme a política de privacidade de cada loja. Dúvidas sobre seus dados podem ser enviadas pelos nossos canais de contato.",
   },
-  admin: { usuario: "admin", senha: "Cupom@2026" },
 };
 
 let cache: HubData | null = null;

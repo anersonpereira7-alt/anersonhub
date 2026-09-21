@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Lock, LogOut, Plus, Trash2, Save, Power } from "lucide-react";
+import { FolderCog, Globe2, Lock, LogOut, MessageCircle, Pencil, Plus, Power, ScrollText, Store, Trash2, UserRound, X } from "lucide-react";
 import {
   setData,
   slugify,
@@ -13,6 +13,9 @@ import { ICON_LIBRARY, SOCIAL_ICON_IDS } from "@/lib/icon-library";
 import { Icon3D, SocialIcon } from "@/components/Icon3D";
 import { ViniAssistant } from "@/components/ViniAssistant";
 import { PageShell } from "@/components/SiteChrome";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import vini3d from "@/assets/vini-3d.png";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -35,27 +38,44 @@ const botaoSec =
   "rounded-xl border border-brand/30 bg-white/70 px-3 py-2.5 text-[13px] font-semibold text-brand transition active:scale-95";
 
 function Admin() {
-  const data = useHubData();
   const [logado, setLogado] = useState(false);
+  const [verificando, setVerificando] = useState(true);
   const [usuario, setUsuario] = useState("");
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
   const [aba, setAba] = useState("categorias");
+  const [viniAberto, setViniAberto] = useState(false);
 
   useEffect(() => {
-    if (sessionStorage.getItem("hub-admin") === "1") setLogado(true);
+    void (async () => {
+      const { data } = await supabase.auth.getUser();
+      if (data.user) {
+        const { data: role } = await supabase.from("user_roles").select("role").eq("user_id", data.user.id).eq("role", "admin").maybeSingle();
+        setLogado(Boolean(role));
+      }
+      setVerificando(false);
+    })();
   }, []);
 
-  function entrar(e: React.FormEvent) {
+  async function entrar(e: React.FormEvent) {
     e.preventDefault();
-    if (usuario.trim() === data.admin.usuario && senha === data.admin.senha) {
-      sessionStorage.setItem("hub-admin", "1");
-      setLogado(true);
-      setErro("");
-    } else {
+    setErro("");
+    const email = usuario.includes("@") ? usuario.trim() : `${usuario.trim().toLowerCase()}@cupomhub.local`;
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
+    if (error || !data.user) {
       setErro("Usuário ou senha incorretos.");
+      return;
     }
+    const { data: role } = await supabase.from("user_roles").select("role").eq("user_id", data.user.id).eq("role", "admin").maybeSingle();
+    if (!role) {
+      await supabase.auth.signOut();
+      setErro("Este acesso não possui permissão de administrador.");
+      return;
+    }
+    setLogado(true);
   }
+
+  if (verificando) return <PageShell><div className="mt-24 text-center text-sm text-ink/55">Verificando acesso…</div></PageShell>;
 
   if (!logado) {
     return (
@@ -74,7 +94,7 @@ function Admin() {
             onChange={(e) => setSenha(e.target.value)}
           />
           {erro ? <p className="text-[12px] font-medium text-destructive">{erro}</p> : null}
-          <button className={`${botao} w-full`}>Entrar</button>
+          <Button type="submit" className={`${botao} h-auto w-full`}>Entrar</Button>
           <Link to="/" className="block pt-1 text-center text-[12px] font-medium text-ink/55">
             Voltar ao site
           </Link>
@@ -84,70 +104,84 @@ function Admin() {
   }
 
   const abas = [
-    ["categorias", "Categorias"],
-    ["lojas", "Lojas"],
-    ["redes", "Redes"],
-    ["textos", "Textos"],
-    ["perfil", "Perfil"],
-    ["vini", "Vini"],
+    ["categorias", "Categorias", FolderCog],
+    ["lojas", "Lojas", Store],
+    ["redes", "Redes sociais", Globe2],
+    ["textos", "Textos legais", ScrollText],
+    ["perfil", "Perfil e acesso", UserRound],
   ] as const;
 
   return (
-    <PageShell>
+    <PageShell wide>
       <header className="glass-panel flex items-center justify-between rounded-2xl px-4 py-3">
         <h1 className="font-display text-base font-bold">Painel Admin</h1>
-        <button
-          onClick={() => {
-            sessionStorage.removeItem("hub-admin");
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={async () => {
+            await supabase.auth.signOut();
             setLogado(false);
           }}
-          className="flex items-center gap-1 rounded-full border border-glass-border bg-white/60 px-3 py-1.5 text-xs font-semibold text-brand"
+          className="rounded-full border-glass-border bg-background/60 text-brand"
         >
           <LogOut className="size-3.5" /> Sair
-        </button>
+        </Button>
       </header>
 
-      <nav className="mt-3 flex gap-2 overflow-x-auto pb-1">
-        {abas.map(([id, label]) => (
-          <button
-            key={id}
-            onClick={() => setAba(id)}
-            className={
-              aba === id
-                ? "shrink-0 rounded-full bg-gradient-to-r from-brand to-violet px-3.5 py-1.5 text-xs font-semibold text-primary-foreground"
-                : "shrink-0 rounded-full border border-glass-border bg-white/60 px-3.5 py-1.5 text-xs font-semibold text-ink/60"
-            }
-          >
-            {label}
-          </button>
-        ))}
-      </nav>
-
-      <div className="mt-4 space-y-3">
-        {aba === "categorias" && <Categorias />}
-        {aba === "lojas" && <Lojas />}
-        {aba === "redes" && <Redes />}
-        {aba === "textos" && <Textos />}
-        {aba === "perfil" && <Perfil />}
-        {aba === "vini" && <ViniAssistant />}
+      <div className="mt-4 md:grid md:grid-cols-[220px_minmax(0,1fr)] md:gap-5">
+        <select value={aba} onChange={(e) => setAba(e.target.value)} className={`${campo} mb-4 md:hidden`} aria-label="Área de configuração">
+          {abas.map(([id, label]) => <option key={id} value={id}>{label}</option>)}
+        </select>
+        <nav className="glass-panel hidden h-fit space-y-1 rounded-2xl p-2 md:block" aria-label="Configurações do painel">
+          {abas.map(([id, label, Icon]) => (
+            <Button key={id} variant="ghost" onClick={() => setAba(id)} className={aba === id ? "w-full justify-start bg-brand/10 text-brand" : "w-full justify-start text-ink/65"}>
+              <Icon /> {label}
+            </Button>
+          ))}
+        </nav>
+        <main className="min-w-0 space-y-3">
+          <div className="mb-3 px-1">
+            <p className="text-xs font-semibold uppercase text-brand">Configurações</p>
+            <h2 className="font-display text-xl font-bold">{abas.find(([id]) => id === aba)?.[1]}</h2>
+          </div>
+          {aba === "categorias" && <Categorias />}
+          {aba === "lojas" && <Lojas />}
+          {aba === "redes" && <Redes />}
+          {aba === "textos" && <Textos />}
+          {aba === "perfil" && <Perfil />}
+        </main>
       </div>
 
       <Link to="/" className="mt-6 block text-center text-[12px] font-medium text-ink/55">
         Ver o site
       </Link>
+
+      {viniAberto ? (
+        <div className="fixed bottom-20 right-4 z-50 w-[min(390px,calc(100vw-2rem))] shadow-card">
+          <Button variant="outline" size="icon" aria-label="Fechar Vini" onClick={() => setViniAberto(false)} className="absolute -right-1 -top-11 rounded-full bg-background"><X /></Button>
+          <ViniAssistant />
+        </div>
+      ) : null}
+      <Button size="icon" aria-label="Abrir Vini" title="Abrir Vini" onClick={() => setViniAberto((aberto) => !aberto)} className="fixed bottom-5 right-5 z-50 size-14 rounded-full bg-gradient-to-br from-brand to-cyan shadow-card">
+        <img src={vini3d} alt="" className="size-12 object-contain" />
+      </Button>
     </PageShell>
   );
 }
 
 function IconPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
-    <select className={campo} value={value} onChange={(e) => onChange(e.target.value)}>
-      {ICON_LIBRARY.map((i) => (
-        <option key={i.id} value={i.id}>
-          {i.label}
-        </option>
-      ))}
-    </select>
+    <fieldset>
+      <legend className="mb-2 text-[12px] font-semibold text-ink/60">Escolha o ícone</legend>
+      <div className="grid max-h-72 grid-cols-4 gap-2 overflow-y-auto rounded-xl border border-glass-border bg-background/40 p-2 sm:grid-cols-6">
+        {ICON_LIBRARY.map((i) => (
+          <button key={i.id} type="button" title={i.label} aria-label={i.label} aria-pressed={value === i.id} onClick={() => onChange(i.id)} className={value === i.id ? "flex min-w-0 flex-col items-center gap-1 rounded-xl border border-brand bg-brand/10 p-2" : "flex min-w-0 flex-col items-center gap-1 rounded-xl border border-transparent p-2 hover:bg-background/70"}>
+            <Icon3D iconId={i.id} className="size-10" />
+            <span className="w-full truncate text-[10px] font-medium text-ink/70">{i.label}</span>
+          </button>
+        ))}
+      </div>
+    </fieldset>
   );
 }
 
@@ -250,8 +284,8 @@ function Categorias() {
           >
             <Power className="size-4" />
           </button>
-          <button onClick={() => setEditando(c)} className="grid size-9 place-items-center rounded-xl bg-white/70 text-brand">
-            <Save className="size-4" />
+           <button title="Editar categoria" aria-label="Editar categoria" onClick={() => setEditando({ ...c })} className="grid size-9 place-items-center rounded-xl bg-white/70 text-brand">
+             <Pencil className="size-4" />
           </button>
           <button
             onClick={() =>
@@ -435,8 +469,8 @@ function Lojas() {
           >
             <Power className="size-4" />
           </button>
-          <button onClick={() => setEditando(l)} className="grid size-9 place-items-center rounded-xl bg-white/70 text-brand">
-            <Save className="size-4" />
+           <button title="Editar loja" aria-label="Editar loja" onClick={() => setEditando({ ...l, categorias: [...l.categorias], cupons: l.cupons.map((c) => ({ ...c })) })} className="grid size-9 place-items-center rounded-xl bg-white/70 text-brand">
+             <Pencil className="size-4" />
           </button>
           <button
             onClick={() => setData((d) => ({ ...d, lojas: d.lojas.filter((x) => x.id !== l.id) }))}
@@ -529,10 +563,45 @@ function Textos() {
 }
 
 function Perfil() {
-  const { perfil, admin } = useHubData();
+  const { perfil } = useHubData();
   const [p, setP] = useState(perfil);
+  const [nomeAdmin, setNomeAdmin] = useState("");
+  const [fotoAdmin, setFotoAdmin] = useState("");
+  const [senhaAtual, setSenhaAtual] = useState("");
   const [novaSenha, setNovaSenha] = useState("");
   const [msg, setMsg] = useState("");
+
+  useEffect(() => {
+    void (async () => {
+      const { data: auth } = await supabase.auth.getUser();
+      if (!auth.user) return;
+      const { data } = await supabase.from("profiles").select("display_name, avatar_url").eq("id", auth.user.id).maybeSingle();
+      if (data) {
+        setNomeAdmin(data.display_name);
+        setFotoAdmin(data.avatar_url ?? "");
+      }
+    })();
+  }, []);
+
+  async function salvarPerfilAdmin() {
+    const { data: auth } = await supabase.auth.getUser();
+    if (!auth.user) return;
+    const { error } = await supabase.from("profiles").upsert({ id: auth.user.id, display_name: nomeAdmin, avatar_url: fotoAdmin || null });
+    setMsg(error ? "Não foi possível salvar o perfil." : "Perfil do administrador salvo.");
+  }
+
+  async function alterarSenha() {
+    if (!senhaAtual || novaSenha.length < 6) {
+      setMsg("Informe a senha atual e uma nova senha com ao menos 6 caracteres.");
+      return;
+    }
+    const { error } = await supabase.auth.updateUser({ password: novaSenha, current_password: senhaAtual });
+    setMsg(error ? "A senha atual está incorreta ou a nova senha não foi aceita." : "Senha alterada com sucesso.");
+    if (!error) {
+      setSenhaAtual("");
+      setNovaSenha("");
+    }
+  }
 
   return (
     <>
@@ -554,8 +623,21 @@ function Perfil() {
       </div>
 
       <div className="glass-panel space-y-2 rounded-2xl p-4">
-        <p className="font-display text-sm font-semibold">Acesso do admin</p>
-        <p className="text-[12px] text-ink/55">Usuário atual: {admin.usuario}</p>
+        <p className="font-display text-sm font-semibold">Perfil do administrador</p>
+        <input className={campo} placeholder="Nome de exibição" value={nomeAdmin} onChange={(e) => setNomeAdmin(e.target.value)} />
+        <input className={campo} placeholder="Link da foto (opcional)" value={fotoAdmin} onChange={(e) => setFotoAdmin(e.target.value)} />
+        <Button onClick={salvarPerfilAdmin} className={`${botao} h-auto w-full`}>Salvar perfil do administrador</Button>
+      </div>
+
+      <div className="glass-panel space-y-2 rounded-2xl p-4">
+        <p className="font-display text-sm font-semibold">Alterar senha</p>
+        <input
+          className={campo}
+          type="password"
+          placeholder="Senha atual"
+          value={senhaAtual}
+          onChange={(e) => setSenhaAtual(e.target.value)}
+        />
         <input
           className={campo}
           type="password"
@@ -563,20 +645,9 @@ function Perfil() {
           value={novaSenha}
           onChange={(e) => setNovaSenha(e.target.value)}
         />
-        <button
-          onClick={() => {
-            if (novaSenha.length < 6) {
-              setMsg("A senha precisa ter ao menos 6 caracteres.");
-              return;
-            }
-            setData((d) => ({ ...d, admin: { ...d.admin, senha: novaSenha } }));
-            setNovaSenha("");
-            setMsg("Senha alterada com sucesso.");
-          }}
-          className={`${botao} w-full`}
-        >
+        <Button onClick={alterarSenha} className={`${botao} h-auto w-full`}>
           Alterar senha
-        </button>
+        </Button>
         {msg ? <p className="text-[12px] font-medium text-ink/60">{msg}</p> : null}
       </div>
     </>
