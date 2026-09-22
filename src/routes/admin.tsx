@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { FolderCog, Globe2, Lock, LogOut, MessageCircle, Pencil, Plus, Power, ScrollText, Store, Trash2, UserRound } from "lucide-react";
+import { FolderCog, Globe2, Lock, LogOut, MessageCircle, Pencil, Plus, Power, ScrollText, Store, Trash2, Upload, UserRound } from "lucide-react";
+import perfilPadrao from "@/assets/perfil.jpg";
 import {
   setData,
   slugify,
@@ -35,6 +36,31 @@ const botao =
   "rounded-xl bg-gradient-to-r from-brand to-violet px-3 py-2.5 text-[13px] font-semibold text-primary-foreground transition active:scale-95";
 const botaoSec =
   "rounded-xl border border-brand/30 bg-white/70 px-3 py-2.5 text-[13px] font-semibold text-brand transition active:scale-95";
+
+/** Lê a imagem enviada e devolve um JPEG quadrado reduzido em data URL. */
+async function redimensionarImagem(file: File, lado: number): Promise<string> {
+  const bitmap = await createImageBitmap(file);
+  const corte = Math.min(bitmap.width, bitmap.height);
+  const canvas = document.createElement("canvas");
+  canvas.width = lado;
+  canvas.height = lado;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("canvas indisponível");
+  ctx.drawImage(
+    bitmap,
+    (bitmap.width - corte) / 2,
+    (bitmap.height - corte) / 2,
+    corte,
+    corte,
+    0,
+    0,
+    lado,
+    lado,
+  );
+  bitmap.close();
+  return canvas.toDataURL("image/jpeg", 0.85);
+}
+
 
 function Admin() {
   const [logado, setLogado] = useState(false);
