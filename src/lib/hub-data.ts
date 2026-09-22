@@ -29,7 +29,7 @@ export type Loja = {
 export type RedeSocial = { id: string; nome: string; iconId: string; url: string };
 
 export type HubData = {
-  perfil: { nome: string; descricao: string; marca: string; slogan: string };
+  perfil: { nome: string; descricao: string; marca: string; slogan: string; foto?: string };
   categorias: Categoria[];
   lojas: Loja[];
   redes: RedeSocial[];

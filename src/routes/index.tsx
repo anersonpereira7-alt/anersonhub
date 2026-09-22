@@ -35,7 +35,7 @@ function Home() {
     <PageShell>
       <section className="glass-panel flex items-center gap-3 rounded-2xl p-3.5">
         <img
-          src={perfilFoto}
+          src={data.perfil.foto || perfilFoto}
           alt={data.perfil.nome}
           width={56}
           height={56}

@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { FolderCog, Globe2, Lock, LogOut, MessageCircle, Pencil, Plus, Power, ScrollText, Store, Trash2, UserRound } from "lucide-react";
+import { FolderCog, Globe2, Lock, LogOut, MessageCircle, Pencil, Plus, Power, ScrollText, Store, Trash2, Upload, UserRound } from "lucide-react";
+import perfilPadrao from "@/assets/perfil.jpg";
 import {
   setData,
   slugify,
@@ -35,6 +36,31 @@ const botao =
   "rounded-xl bg-gradient-to-r from-brand to-violet px-3 py-2.5 text-[13px] font-semibold text-primary-foreground transition active:scale-95";
 const botaoSec =
   "rounded-xl border border-brand/30 bg-white/70 px-3 py-2.5 text-[13px] font-semibold text-brand transition active:scale-95";
+
+/** Lê a imagem enviada e devolve um JPEG quadrado reduzido em data URL. */
+async function redimensionarImagem(file: File, lado: number): Promise<string> {
+  const bitmap = await createImageBitmap(file);
+  const corte = Math.min(bitmap.width, bitmap.height);
+  const canvas = document.createElement("canvas");
+  canvas.width = lado;
+  canvas.height = lado;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("canvas indisponível");
+  ctx.drawImage(
+    bitmap,
+    (bitmap.width - corte) / 2,
+    (bitmap.height - corte) / 2,
+    corte,
+    corte,
+    0,
+    0,
+    lado,
+    lado,
+  );
+  bitmap.close();
+  return canvas.toDataURL("image/jpeg", 0.85);
+}
+
 
 function Admin() {
   const [logado, setLogado] = useState(false);
@@ -594,10 +620,51 @@ function Perfil() {
     }
   }
 
+  async function enviarFoto(file: File) {
+    if (!file.type.startsWith("image/")) {
+      setMsg("Escolha um arquivo de imagem (JPG ou PNG).");
+      return;
+    }
+    try {
+      const foto = await redimensionarImagem(file, 320);
+      setP((atual) => ({ ...atual, foto }));
+      setMsg("Foto carregada. Clique em “Salvar perfil” para publicar.");
+    } catch {
+      setMsg("Não foi possível ler essa imagem.");
+    }
+  }
+
   return (
     <>
       <div className="glass-panel space-y-2 rounded-2xl p-4">
         <p className="font-display text-sm font-semibold">Perfil do site</p>
+        <div className="flex items-center gap-3">
+          <img
+            src={p.foto || perfilPadrao}
+            alt="Foto do perfil"
+            className="size-16 shrink-0 rounded-2xl object-cover"
+          />
+          <div className="min-w-0 flex-1 space-y-1.5">
+            <label className={`${botaoSec} flex cursor-pointer items-center justify-center gap-1.5`}>
+              <Upload className="size-4" /> Enviar foto
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) void enviarFoto(f);
+                  e.target.value = "";
+                }}
+              />
+            </label>
+            {p.foto ? (
+              <button onClick={() => setP({ ...p, foto: "" })} className="text-[12px] font-semibold text-destructive">
+                Remover foto
+              </button>
+            ) : null}
+          </div>
+        </div>
         <input className={campo} placeholder="Marca" value={p.marca} onChange={(e) => setP({ ...p, marca: e.target.value })} />
         <input className={campo} placeholder="Slogan" value={p.slogan} onChange={(e) => setP({ ...p, slogan: e.target.value })} />
         <input className={campo} placeholder="Nome" value={p.nome} onChange={(e) => setP({ ...p, nome: e.target.value })} />
@@ -608,9 +675,10 @@ function Perfil() {
           value={p.descricao}
           onChange={(e) => setP({ ...p, descricao: e.target.value })}
         />
-        <button onClick={() => setData((d) => ({ ...d, perfil: p }))} className={`${botao} w-full`}>
+        <button onClick={() => { setData((d) => ({ ...d, perfil: p })); setMsg("Perfil do site salvo."); }} className={`${botao} w-full`}>
           Salvar perfil
         </button>
+        {msg ? <p className="text-[12px] font-medium text-ink/60">{msg}</p> : null}
       </div>
 
       <div className="glass-panel space-y-2 rounded-2xl p-4">
