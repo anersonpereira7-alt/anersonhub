@@ -36,6 +36,7 @@
   --color-ink: var(--ink);
   --color-glass: var(--glass);
   --color-glass-border: var(--glass-border);
+  --color-chat-surface: var(--chat-surface);
   --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   --shadow-glass: 0 10px 40px -12px color-mix(in oklab, var(--brand) 45%, transparent);
@@ -51,6 +52,7 @@
   --ink: oklch(0.257 0.09 281.3);
   --glass: oklch(1 0 0 / 60%);
   --glass-border: oklch(1 0 0 / 70%);
+  --chat-surface: oklch(1 0 0);
 
   --background: oklch(0.968 0.014 293);
   --foreground: oklch(0.257 0.09 281.3);

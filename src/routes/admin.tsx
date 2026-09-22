@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { FolderCog, Globe2, Lock, LogOut, MessageCircle, Pencil, Plus, Power, ScrollText, Store, Trash2, UserRound, X } from "lucide-react";
+import { FolderCog, Globe2, Lock, LogOut, MessageCircle, Pencil, Plus, Power, ScrollText, Store, Trash2, UserRound } from "lucide-react";
 import {
   setData,
   slugify,
@@ -15,7 +15,6 @@ import { ViniAssistant } from "@/components/ViniAssistant";
 import { PageShell } from "@/components/SiteChrome";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import vini3d from "@/assets/vini-3d.png";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -44,7 +43,6 @@ function Admin() {
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
   const [aba, setAba] = useState("categorias");
-  const [viniAberto, setViniAberto] = useState(false);
 
   useEffect(() => {
     void (async () => {
@@ -109,6 +107,7 @@ function Admin() {
     ["redes", "Redes sociais", Globe2],
     ["textos", "Textos legais", ScrollText],
     ["perfil", "Perfil e acesso", UserRound],
+    ["vini", "Vini", MessageCircle],
   ] as const;
 
   return (
@@ -149,6 +148,7 @@ function Admin() {
           {aba === "redes" && <Redes />}
           {aba === "textos" && <Textos />}
           {aba === "perfil" && <Perfil />}
+          {aba === "vini" && <ViniAssistant />}
         </main>
       </div>
 
@@ -156,15 +156,6 @@ function Admin() {
         Ver o site
       </Link>
 
-      {viniAberto ? (
-        <div className="fixed bottom-20 right-4 z-50 w-[min(390px,calc(100vw-2rem))] shadow-card">
-          <Button variant="outline" size="icon" aria-label="Fechar Vini" onClick={() => setViniAberto(false)} className="absolute -right-1 -top-11 rounded-full bg-background"><X /></Button>
-          <ViniAssistant />
-        </div>
-      ) : null}
-      <Button size="icon" aria-label="Abrir Vini" title="Abrir Vini" onClick={() => setViniAberto((aberto) => !aberto)} className="fixed bottom-5 right-5 z-50 size-14 rounded-full bg-gradient-to-br from-brand to-cyan shadow-card">
-        <img src={vini3d} alt="" className="size-12 object-contain" />
-      </Button>
     </PageShell>
   );
 }

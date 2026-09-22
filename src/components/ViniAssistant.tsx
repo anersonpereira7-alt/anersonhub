@@ -1,6 +1,21 @@
-import { useState } from "react";
-import { Send } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useEffect, useRef, useState } from "react";
+import {
+  Conversation,
+  ConversationContent,
+  ConversationScrollButton,
+} from "@/components/ai-elements/conversation";
+import {
+  Message,
+  MessageContent,
+  MessageResponse,
+} from "@/components/ai-elements/message";
+import {
+  PromptInput,
+  PromptInputFooter,
+  PromptInputSubmit,
+  PromptInputTextarea,
+  type PromptInputMessage,
+} from "@/components/ai-elements/prompt-input";
 import { ICON_LIBRARY } from "@/lib/icon-library";
 import { setData, slugify, uid, type HubData } from "@/lib/hub-data";
 import vini3d from "@/assets/vini-3d.png";
@@ -211,52 +226,65 @@ export function ViniAssistant() {
     { autor: "vini", texto: "Oi! Sou o Vini. Posso criar, editar ou excluir tudo no painel. Digite \"ajuda\" para ver exemplos." },
   ]);
   const [input, setInput] = useState("");
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  function enviar(e: React.FormEvent) {
-    e.preventDefault();
-    const texto = input.trim();
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  function enviar(message: PromptInputMessage) {
+    const texto = message.text.trim();
     if (!texto) return;
     const resposta = executarComando(texto);
     setMsgs((m) => [...m, { autor: "voce", texto }, { autor: "vini", texto: resposta }]);
     setInput("");
+    requestAnimationFrame(() => inputRef.current?.focus());
   }
 
   return (
-    <div className="glass-panel rounded-2xl p-4">
-      <div className="flex items-center gap-3">
+    <section className="flex h-[calc(100dvh-15rem)] min-h-[340px] max-h-[680px] flex-col overflow-hidden rounded-2xl border border-border bg-chat-surface shadow-card md:h-[min(680px,calc(100dvh-9rem))]" aria-label="Chat com Vini">
+      <header className="flex shrink-0 items-center gap-3 border-b border-border bg-chat-surface p-4">
         <img src={vini3d} alt="Vini" width={48} height={48} className="size-12 object-contain" />
         <div>
           <p className="font-display text-sm font-semibold">Vini · Assistente do painel</p>
           <p className="text-[12px] text-ink/55">Executa as ações do admin por comando.</p>
         </div>
-      </div>
+      </header>
 
-      <div className="mt-3 max-h-72 space-y-2 overflow-y-auto">
-        {msgs.map((m, i) => (
-          <div
-            key={i}
-            className={
-              m.autor === "vini"
-                ? "rounded-2xl rounded-tl-sm bg-white/70 p-3 text-[13px] leading-snug text-ink/75 whitespace-pre-wrap"
-                : "ml-8 rounded-2xl rounded-tr-sm bg-gradient-to-r from-brand to-violet p-3 text-[13px] text-primary-foreground"
-            }
-          >
-            {m.texto}
-          </div>
-        ))}
-      </div>
+      <Conversation className="min-h-0 overscroll-contain bg-chat-surface">
+        <ConversationContent className="gap-4 p-4">
+          {msgs.map((m, i) => (
+            <Message key={`${m.autor}-${i}`} from={m.autor === "voce" ? "user" : "assistant"}>
+              <MessageContent
+                className={
+                  m.autor === "voce"
+                    ? "rounded-xl bg-primary px-4 py-3 text-primary-foreground"
+                    : "text-[13px] leading-relaxed text-foreground"
+                }
+              >
+                <MessageResponse>{m.texto}</MessageResponse>
+              </MessageContent>
+            </Message>
+          ))}
+        </ConversationContent>
+        <ConversationScrollButton aria-label="Ir para a mensagem mais recente" />
+      </Conversation>
 
-      <form onSubmit={enviar} className="mt-3 flex gap-2">
-        <input
+      <div className="shrink-0 border-t border-border bg-chat-surface p-3">
+        <PromptInput onSubmit={enviar} className="bg-chat-surface shadow-none">
+          <PromptInputTextarea
+            ref={inputRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ex.: criar categoria Perfumes icone perfumes"
-          className="flex-1 rounded-xl border border-glass-border bg-white/70 px-3 py-2.5 text-[13px] outline-none focus:ring-2 focus:ring-ring/40"
-        />
-        <Button type="submit" size="icon" aria-label="Enviar mensagem" className="size-11 shrink-0 rounded-xl bg-gradient-to-br from-brand to-cyan">
-          <Send className="size-4" />
-        </Button>
-      </form>
-    </div>
+            className="max-h-28 min-h-16 text-[13px]"
+            aria-label="Mensagem para o Vini"
+          />
+          <PromptInputFooter className="justify-end">
+            <PromptInputSubmit disabled={!input.trim()} aria-label="Enviar mensagem" className="rounded-lg bg-primary text-primary-foreground" />
+          </PromptInputFooter>
+        </PromptInput>
+      </div>
+    </section>
   );
 }
