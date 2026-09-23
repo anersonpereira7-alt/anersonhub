@@ -64,6 +64,10 @@ export type IconDef = {
 /** Biblioteca de ícones 3D com gradiente para categorias e redes sociais. */
 export const ICON_LIBRARY: IconDef[] = [
   { id: "roupas", label: "Roupas", Icon: Shirt, gradient: "from-pink-400 to-rose-500" },
+  { id: "moda-praia", label: "Moda praia e surf", Icon: Waves, gradient: "from-cyan-300 to-blue-600" },
+  { id: "bermudas", label: "Bermudas e casual", Icon: Palmtree, gradient: "from-lime-300 to-teal-600" },
+  { id: "cruz", label: "Produtos cristãos", Icon: Cross, gradient: "from-amber-300 to-yellow-600" },
+  { id: "biblia", label: "Bíblia", Icon: BookOpenText, gradient: "from-amber-500 to-rose-700" },
   { id: "cosmeticos", label: "Cosméticos", Icon: Sparkles, gradient: "from-fuchsia-400 to-pink-500" },
   { id: "perfumes", label: "Perfumes", Icon: SprayCan, gradient: "from-amber-300 to-orange-500" },
   { id: "suplementos", label: "Suplementos", Icon: Pill, gradient: "from-emerald-400 to-teal-500" },
