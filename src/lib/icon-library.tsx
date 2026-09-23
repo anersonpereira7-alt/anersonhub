@@ -1,5 +1,8 @@
 import {
   Shirt,
+  Waves,
+  Palmtree,
+  Cross,
   Sparkles,
   SprayCan,
   Pill,
@@ -25,6 +28,7 @@ import {
   Hotel,
   Gamepad2,
   Book,
+  BookOpenText,
   GraduationCap,
   Stethoscope,
   Scissors,
