@@ -228,6 +228,18 @@ function Categorias() {
     setEditando(null);
   }
 
+  /** Move a categoria da posição i em `delta` posições. */
+  function mover(i: number, delta: number) {
+    setData((d) => {
+      const lista = [...d.categorias];
+      const alvo = i + delta;
+      if (alvo < 0 || alvo >= lista.length) return d;
+      const [item] = lista.splice(i, 1);
+      lista.splice(alvo, 0, item!);
+      return { ...d, categorias: lista };
+    });
+  }
+
   return (
     <>
       <button onClick={novo} className={`${botao} flex w-full items-center justify-center gap-1.5`}>
