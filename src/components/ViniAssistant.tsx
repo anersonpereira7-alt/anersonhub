@@ -285,7 +285,7 @@ export function ViniAssistant() {
                     : "text-[13px] leading-relaxed text-foreground"
                 }
               >
-                <MessageResponse>{m.texto}</MessageResponse>
+                <p className="whitespace-pre-wrap">{m.texto}</p>
               </MessageContent>
             </Message>
           ))}
