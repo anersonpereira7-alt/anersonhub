@@ -44,10 +44,15 @@ function acharLoja(d: HubData, nome: string) {
   return d.lojas.find((l) => slugify(l.nome) === alvo);
 }
 
-/** Interpreta um comando em linguagem natural e executa a ação no painel. */
-export function executarComando(entrada: string): string {
-  const texto = entrada.trim();
-  const t = texto.toLowerCase();
+/** Remove acentos para comparar comandos escritos com ou sem acentuação. */
+function semAcento(v: string) {
+  return v.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+/** Executa uma única linha de comando. */
+function executarLinha(entrada: string): string {
+  const texto = entrada.replace(/^[\s•\-*]+/, "").trim();
+  const t = semAcento(texto.toLowerCase());
 
   if (!t || t.includes("ajuda") || t.includes("o que você faz")) return AJUDA;
 
