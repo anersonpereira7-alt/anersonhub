@@ -223,8 +223,26 @@ function executarLinha(entrada: string): string {
     return `Texto de ${campo} atualizado.`;
   }
 
-  return `Não entendi esse comando. ${AJUDA}`;
+  return `Não entendi "${texto}".\n\n${AJUDA}`;
 }
+
+/**
+ * Interpreta um comando em linguagem natural. Aceita várias linhas:
+ * cada linha vira um comando, exceto textos legais (que podem ter parágrafos).
+ */
+export function executarComando(entrada: string): string {
+  const texto = entrada.trim();
+  if (!texto) return AJUDA;
+  if (/^atualizar\s+(termos|privacidade)/i.test(semAcento(texto))) return executarLinha(texto);
+
+  const linhas = texto
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+  if (linhas.length <= 1) return executarLinha(texto);
+  return linhas.map((l) => `• ${executarLinha(l)}`).join("\n");
+}
+
 
 export function ViniAssistant() {
   const [msgs, setMsgs] = useState<Msg[]>([
