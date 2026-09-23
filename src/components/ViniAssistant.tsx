@@ -256,7 +256,7 @@ export function ViniAssistant() {
   }, []);
 
   function enviar(message: PromptInputMessage) {
-    const texto = message.text.trim();
+    const texto = (message.text?.trim() ? message.text : input).trim();
     if (!texto) return;
     const resposta = executarComando(texto);
     setMsgs((m) => [...m, { autor: "voce", texto }, { autor: "vini", texto: resposta }]);
