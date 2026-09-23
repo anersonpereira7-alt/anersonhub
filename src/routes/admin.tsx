@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { FolderCog, Globe2, Lock, LogOut, MessageCircle, Pencil, Plus, Power, ScrollText, Store, Trash2, Upload, UserRound } from "lucide-react";
+import { ArrowDown, ArrowUp, FolderCog, Globe2, Lock, LogOut, MessageCircle, Pencil, Plus, Power, ScrollText, Store, Trash2, Upload, UserRound } from "lucide-react";
 import perfilPadrao from "@/assets/perfil.jpg";
 import {
   setData,
@@ -228,6 +228,18 @@ function Categorias() {
     setEditando(null);
   }
 
+  /** Move a categoria da posição i em `delta` posições. */
+  function mover(i: number, delta: number) {
+    setData((d) => {
+      const lista = [...d.categorias];
+      const alvo = i + delta;
+      if (alvo < 0 || alvo >= lista.length) return d;
+      const [item] = lista.splice(i, 1);
+      lista.splice(alvo, 0, item!);
+      return { ...d, categorias: lista };
+    });
+  }
+
   return (
     <>
       <button onClick={novo} className={`${botao} flex w-full items-center justify-center gap-1.5`}>
@@ -279,16 +291,34 @@ function Categorias() {
         </div>
       ) : null}
 
-      {categorias.map((c) => (
-        <div key={c.id} className="glass-panel flex items-center gap-3 rounded-2xl p-3">
+      {categorias.map((c, i) => (
+        <div key={c.id} className="glass-panel flex flex-wrap items-center gap-2 rounded-2xl p-3 sm:gap-3">
           <Icon3D iconId={c.iconId} />
           <div className="min-w-0 flex-1">
             <p className="truncate text-[14px] font-semibold">{c.nome}</p>
             <p className="text-[11px] text-ink/50">
-              {c.ativa ? "ativa" : "desativada"}
+              {i + 1}º · {c.ativa ? "ativa" : "desativada"}
               {c.restrita ? " · restrita +18" : ""}
             </p>
           </div>
+          <button
+            title="Mover para cima"
+            aria-label="Mover categoria para cima"
+            disabled={i === 0}
+            onClick={() => mover(i, -1)}
+            className="grid size-9 place-items-center rounded-xl bg-white/70 text-brand disabled:opacity-35"
+          >
+            <ArrowUp className="size-4" />
+          </button>
+          <button
+            title="Mover para baixo"
+            aria-label="Mover categoria para baixo"
+            disabled={i === categorias.length - 1}
+            onClick={() => mover(i, 1)}
+            className="grid size-9 place-items-center rounded-xl bg-white/70 text-brand disabled:opacity-35"
+          >
+            <ArrowDown className="size-4" />
+          </button>
           <button
             title={c.ativa ? "Desativar" : "Ativar"}
             onClick={() =>

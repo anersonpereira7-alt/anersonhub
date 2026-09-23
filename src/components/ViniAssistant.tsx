@@ -7,7 +7,7 @@ import {
 import {
   Message,
   MessageContent,
-  MessageResponse,
+
 } from "@/components/ai-elements/message";
 import {
   PromptInput,
@@ -44,10 +44,15 @@ function acharLoja(d: HubData, nome: string) {
   return d.lojas.find((l) => slugify(l.nome) === alvo);
 }
 
-/** Interpreta um comando em linguagem natural e executa a ação no painel. */
-export function executarComando(entrada: string): string {
-  const texto = entrada.trim();
-  const t = texto.toLowerCase();
+/** Remove acentos para comparar comandos escritos com ou sem acentuação. */
+function semAcento(v: string) {
+  return v.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+/** Executa uma única linha de comando. */
+function executarLinha(entrada: string): string {
+  const texto = entrada.replace(/^[\s•\-*]+/, "").trim();
+  const t = semAcento(texto.toLowerCase());
 
   if (!t || t.includes("ajuda") || t.includes("o que você faz")) return AJUDA;
 
@@ -218,8 +223,26 @@ export function executarComando(entrada: string): string {
     return `Texto de ${campo} atualizado.`;
   }
 
-  return `Não entendi esse comando. ${AJUDA}`;
+  return `Não entendi "${texto}".\n\n${AJUDA}`;
 }
+
+/**
+ * Interpreta um comando em linguagem natural. Aceita várias linhas:
+ * cada linha vira um comando, exceto textos legais (que podem ter parágrafos).
+ */
+export function executarComando(entrada: string): string {
+  const texto = entrada.trim();
+  if (!texto) return AJUDA;
+  if (/^atualizar\s+(termos|privacidade)/i.test(semAcento(texto))) return executarLinha(texto);
+
+  const linhas = texto
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+  if (linhas.length <= 1) return executarLinha(texto);
+  return linhas.map((l) => `• ${executarLinha(l)}`).join("\n");
+}
+
 
 export function ViniAssistant() {
   const [msgs, setMsgs] = useState<Msg[]>([
@@ -233,7 +256,7 @@ export function ViniAssistant() {
   }, []);
 
   function enviar(message: PromptInputMessage) {
-    const texto = message.text.trim();
+    const texto = (message.text?.trim() ? message.text : input).trim();
     if (!texto) return;
     const resposta = executarComando(texto);
     setMsgs((m) => [...m, { autor: "voce", texto }, { autor: "vini", texto: resposta }]);
@@ -262,7 +285,7 @@ export function ViniAssistant() {
                     : "text-[13px] leading-relaxed text-foreground"
                 }
               >
-                <MessageResponse>{m.texto}</MessageResponse>
+                <p className="whitespace-pre-wrap">{m.texto}</p>
               </MessageContent>
             </Message>
           ))}
