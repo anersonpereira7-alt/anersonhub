@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, useLoaderData, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useHubData, type Loja } from "@/lib/hub-data";
 import { Icon3D } from "@/components/Icon3D";
@@ -6,6 +6,7 @@ import { PageShell, SiteFooter } from "@/components/SiteChrome";
 import { StoreCard } from "@/components/StoreCard";
 import { CouponDialog } from "@/components/CouponDialog";
 import perfilFoto from "@/assets/perfil.jpg";
+import { getHubContent } from "@/lib/hub.functions";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -22,14 +23,19 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
+  loader: () => getHubContent(),
+  errorComponent: () => <Home />,
+  notFoundComponent: () => <Home />,
   component: Home,
 });
 
 function Home() {
-  const data = useHubData();
+  const inicial = useLoaderData({ strict: false }) as string | null | undefined;
+  const data = useHubData(inicial);
   const [lojaAberta, setLojaAberta] = useState<Loja | null>(null);
   const categorias = data.categorias.filter((c) => c.ativa);
-  const destaques = data.lojas.filter((l) => l.ativa && l.temCupom && l.cupons.length > 0).slice(0, 2);
+  const destaques = data.lojas.filter((l) => l.ativa && l.destaque)
+    .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
 
   return (
     <PageShell>
@@ -72,7 +78,7 @@ function Home() {
           <div className="mb-3 flex items-center justify-between px-1">
             <h2 className="font-display text-sm font-semibold text-ink/80">Lojas em destaque</h2>
             <span className="rounded-full bg-brand/10 px-2 py-0.5 text-[10px] font-semibold text-brand">
-              com cupom
+              selecionadas
             </span>
           </div>
           <div className="space-y-3">
