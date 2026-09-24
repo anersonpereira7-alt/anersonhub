@@ -7,6 +7,7 @@ import { PageShell, SiteFooter } from "@/components/SiteChrome";
 import { StoreCard } from "@/components/StoreCard";
 import { CouponDialog } from "@/components/CouponDialog";
 import { AgeGate } from "@/components/AgeGate";
+import { getHubContent } from "@/lib/hub.functions";
 
 export const Route = createFileRoute("/categoria/$slug")({
   head: ({ params }) => {
@@ -21,13 +22,17 @@ export const Route = createFileRoute("/categoria/$slug")({
       ],
     };
   },
+  loader: () => getHubContent(),
+  errorComponent: () => <CategoriaPage />,
+  notFoundComponent: () => <CategoriaPage />,
   component: CategoriaPage,
 });
 
 function CategoriaPage() {
   const { slug } = Route.useParams();
   const navigate = useNavigate();
-  const data = useHubData();
+  const inicial = Route.useLoaderData({ strict: false }) as string | null | undefined;
+  const data = useHubData(inicial);
   const categoria = categoriaPorSlug(data, slug);
   const [lojaAberta, setLojaAberta] = useState<Loja | null>(null);
   const [idadeOk, setIdadeOk] = useState(false);
@@ -46,7 +51,9 @@ function CategoriaPage() {
     );
   }
 
-  const lojas = lojasDaCategoria(data, categoria.id);
+  const lojas = [...lojasDaCategoria(data, categoria.id)].sort((a, b) =>
+    a.nome.localeCompare(b.nome, "pt-BR"),
+  );
   const precisaIdade = categoria.restrita && !idadeOk;
 
   return (
