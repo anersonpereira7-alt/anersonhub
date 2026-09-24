@@ -366,6 +366,7 @@ function Lojas() {
       temCupom: false,
       cupons: [],
       ativa: true,
+      destaque: false,
     });
   }
 
@@ -438,6 +439,14 @@ function Lojas() {
             />
             Esta loja tem cupom
           </label>
+          <label className="flex items-center gap-2 text-[13px] text-ink/70">
+            <input
+              type="checkbox"
+              checked={!!editando.destaque}
+              onChange={(e) => setEditando({ ...editando, destaque: e.target.checked })}
+            />
+            Mostrar em "Lojas em destaque" na home
+          </label>
 
           {editando.temCupom ? (
             <div className="space-y-2">
@@ -505,6 +514,7 @@ function Lojas() {
             <p className="truncate text-[14px] font-semibold">{l.nome}</p>
             <p className="text-[11px] text-ink/50">
               {l.categorias.length} categoria(s) · {l.cupons.length} cupom(ns)
+              {l.destaque ? " · ⭐ destaque" : ""}
             </p>
           </div>
           <button
