@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, useLoaderData, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useHubData, type Loja } from "@/lib/hub-data";
 import { Icon3D } from "@/components/Icon3D";
@@ -30,7 +30,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  const inicial = Route.useLoaderData({ strict: false }) as string | null | undefined;
+  const inicial = useLoaderData({ strict: false }) as string | null | undefined;
   const data = useHubData(inicial);
   const [lojaAberta, setLojaAberta] = useState<Loja | null>(null);
   const categorias = data.categorias.filter((c) => c.ativa);

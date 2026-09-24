@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useLoaderData, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { ArrowLeft, Info } from "lucide-react";
 import { categoriaPorSlug, lojasDaCategoria, useHubData, type Loja } from "@/lib/hub-data";
@@ -31,7 +31,7 @@ export const Route = createFileRoute("/categoria/$slug")({
 function CategoriaPage() {
   const { slug } = Route.useParams();
   const navigate = useNavigate();
-  const inicial = Route.useLoaderData({ strict: false }) as string | null | undefined;
+  const inicial = useLoaderData({ strict: false }) as string | null | undefined;
   const data = useHubData(inicial);
   const categoria = categoriaPorSlug(data, slug);
   const [lojaAberta, setLojaAberta] = useState<Loja | null>(null);
