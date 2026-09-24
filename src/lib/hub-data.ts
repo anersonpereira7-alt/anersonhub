@@ -24,6 +24,7 @@ export type Loja = {
   temCupom: boolean;
   cupons: Cupom[];
   ativa: boolean;
+  destaque?: boolean;
 };
 
 export type RedeSocial = { id: string; nome: string; iconId: string; url: string };
@@ -230,8 +231,24 @@ function subscribe(cb: () => void) {
 }
 
 /** Lê os dados do hub. Durante o SSR devolve os dados padrão. */
-export function useHubData(): HubData {
-  const data = useSyncExternalStore(subscribe, read, () => DEFAULT_DATA);
+let primedWith: string | null = null;
+
+function parseInicial(inicial?: string | null): HubData | null {
+  if (!inicial) return null;
+  try {
+    return { ...DEFAULT_DATA, ...(JSON.parse(inicial) as HubData) };
+  } catch {
+    return null;
+  }
+}
+
+export function useHubData(inicial?: string | null): HubData {
+  const inicialData = parseInicial(inicial);
+  if (typeof window !== "undefined" && inicial && inicialData && primedWith !== inicial) {
+    primedWith = inicial;
+    cache = inicialData;
+  }
+  const data = useSyncExternalStore(subscribe, read, () => inicialData ?? DEFAULT_DATA);
   useEffect(() => {
     let ativo = true;
     void supabase
