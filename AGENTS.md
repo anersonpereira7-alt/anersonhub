@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Keep third-party advertising scripts inside sandboxed iframes scoped to their intended page, preventing injected markup from disrupting site navigation.

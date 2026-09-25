@@ -7,6 +7,7 @@ import { PageShell, SiteFooter } from "@/components/SiteChrome";
 import { StoreCard } from "@/components/StoreCard";
 import { CouponDialog } from "@/components/CouponDialog";
 import { AgeGate } from "@/components/AgeGate";
+import { BettingAds } from "@/components/BettingAds";
 import { getHubContent } from "@/lib/hub.functions";
 
 export const Route = createFileRoute("/categoria/$slug")({
@@ -72,6 +73,8 @@ function CategoriaPage() {
           <p className="mt-0.5 text-[13px] leading-snug text-ink/65">{categoria.descricao}</p>
         </div>
       </section>
+
+      {slug === "apostas" && idadeOk ? <BettingAds /> : null}
 
       <div className="mt-4 flex items-center justify-between px-1">
         <h2 className="font-display text-sm font-semibold text-ink/80">Lojas parceiras</h2>
