@@ -289,3 +289,10 @@ export function lojasDaCategoria(d: HubData, categoriaId: string) {
 export function categoriaPorSlug(d: HubData, slug: string) {
   return d.categorias.find((c) => c.slug === slug);
 }
+
+/** Anúncios ativos disponíveis para um local ("home" ou o id de uma categoria). */
+export function anunciosDe(d: HubData, local: string) {
+  return (d.anuncios ?? []).filter(
+    (a) => a.ativo && (local === "home" ? a.home : a.categorias.includes(local)),
+  );
+}
