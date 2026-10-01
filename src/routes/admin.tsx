@@ -752,3 +752,210 @@ function Perfil() {
     </>
   );
 }
+
+/** Reduz a imagem enviada mantendo a proporção, para guardar como banner. */
+async function redimensionarBanner(file: File, larguraMax: number): Promise<string> {
+  const bitmap = await createImageBitmap(file);
+  const escala = Math.min(1, larguraMax / bitmap.width);
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(bitmap.width * escala);
+  canvas.height = Math.round(bitmap.height * escala);
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("canvas indisponível");
+  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+  return canvas.toDataURL("image/jpeg", 0.85);
+}
+
+const ANUNCIO_NOVO = (): Anuncio => ({
+  id: uid(),
+  tag: "",
+  tipo: "imagem",
+  imagem: "",
+  link: "",
+  codigo: "",
+  ativo: true,
+  home: true,
+  categorias: [],
+});
+
+function Anuncios() {
+  const data = useHubData();
+  const anuncios = data.anuncios ?? [];
+  const [edit, setEdit] = useState<Anuncio | null>(null);
+  const [msg, setMsg] = useState("");
+
+  function salvar(a: Anuncio) {
+    if (!a.tag.trim()) return;
+    setData((d) => {
+      const lista = d.anuncios ?? [];
+      const existe = lista.some((x) => x.id === a.id);
+      return { ...d, anuncios: existe ? lista.map((x) => (x.id === a.id ? a : x)) : [...lista, a] };
+    });
+    setEdit(null);
+    setMsg("Anúncio salvo.");
+  }
+
+  function remover(id: string) {
+    setData((d) => ({ ...d, anuncios: (d.anuncios ?? []).filter((x) => x.id !== id) }));
+  }
+
+  function alternar(id: string) {
+    setData((d) => ({
+      ...d,
+      anuncios: (d.anuncios ?? []).map((x) => (x.id === id ? { ...x, ativo: !x.ativo } : x)),
+    }));
+  }
+
+  return (
+    <>
+      {edit ? (
+        <div className="glass-panel space-y-3 rounded-2xl p-4">
+          <p className="font-display text-sm font-semibold">
+            {anuncios.some((x) => x.id === edit.id) ? "Editar anúncio" : "Novo anúncio"}
+          </p>
+          <input
+            className={campo}
+            placeholder="Identificação interna (ex.: Loja Silva · outubro)"
+            value={edit.tag}
+            onChange={(e) => setEdit({ ...edit, tag: e.target.value })}
+          />
+          <select
+            className={campo}
+            value={edit.tipo}
+            onChange={(e) => setEdit({ ...edit, tipo: e.target.value as Anuncio["tipo"] })}
+          >
+            <option value="imagem">Banner próprio (imagem + link)</option>
+            <option value="script">Código / script do anunciante</option>
+          </select>
+
+          {edit.tipo === "imagem" ? (
+            <>
+              {edit.imagem ? (
+                <img src={edit.imagem} alt="Prévia do banner" className="mx-auto block max-w-full rounded-xl" />
+              ) : null}
+              <label className={`${botaoSec} flex cursor-pointer items-center justify-center gap-2`}>
+                <Upload className="size-4" /> Enviar imagem
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    try {
+                      const url = await redimensionarBanner(file, 720);
+                      setEdit({ ...edit, imagem: url });
+                      setMsg("Imagem carregada.");
+                    } catch {
+                      setMsg("Não foi possível carregar a imagem.");
+                    }
+                  }}
+                />
+              </label>
+              <input
+                className={campo}
+                placeholder="Link de destino (https://…)"
+                value={edit.link ?? ""}
+                onChange={(e) => setEdit({ ...edit, link: e.target.value })}
+              />
+            </>
+          ) : (
+            <textarea
+              className={`${campo} min-h-32 font-mono text-[12px]`}
+              placeholder="Cole aqui o código/script do anunciante"
+              value={edit.codigo ?? ""}
+              onChange={(e) => setEdit({ ...edit, codigo: e.target.value })}
+            />
+          )}
+
+          <label className="flex items-center gap-2 text-[13px] text-ink/70">
+            <input type="checkbox" checked={edit.ativo} onChange={(e) => setEdit({ ...edit, ativo: e.target.checked })} />
+            Anúncio ativo
+          </label>
+          <label className="flex items-center gap-2 text-[13px] text-ink/70">
+            <input type="checkbox" checked={edit.home} onChange={(e) => setEdit({ ...edit, home: e.target.checked })} />
+            Exibir na página inicial
+          </label>
+
+          <fieldset>
+            <legend className="mb-1.5 text-[12px] font-semibold text-ink/60">Categorias onde pode aparecer</legend>
+            <div className="grid grid-cols-2 gap-1.5">
+              {data.categorias.map((c) => (
+                <label key={c.id} className="flex items-center gap-2 text-[13px] text-ink/70">
+                  <input
+                    type="checkbox"
+                    checked={edit.categorias.includes(c.id)}
+                    onChange={(e) =>
+                      setEdit({
+                        ...edit,
+                        categorias: e.target.checked
+                          ? [...edit.categorias, c.id]
+                          : edit.categorias.filter((x) => x !== c.id),
+                      })
+                    }
+                  />
+                  {c.nome}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <div className="flex gap-2">
+            <button onClick={() => salvar(edit)} className={`${botao} flex-1`}>
+              Salvar
+            </button>
+            <button onClick={() => setEdit(null)} className={botaoSec}>
+              Cancelar
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button onClick={() => setEdit(ANUNCIO_NOVO())} className={`${botao} flex w-full items-center justify-center gap-2`}>
+          <Plus className="size-4" /> Novo anúncio
+        </button>
+      )}
+
+      {msg ? <p className="px-1 text-[12px] font-medium text-ink/60">{msg}</p> : null}
+
+      {anuncios.map((a) => (
+        <div key={a.id} className="glass-panel space-y-2 rounded-2xl p-3">
+          <div className="flex items-center gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[14px] font-semibold">{a.tag || "Sem identificação"}</p>
+              <p className="truncate text-[11px] text-ink/50">
+                {a.tipo === "imagem" ? "Banner próprio" : "Código do anunciante"} ·{" "}
+                {a.ativo ? "ativo" : "pausado"} · {a.home ? "home" : "sem home"} ·{" "}
+                {a.categorias.length} categoria(s)
+              </p>
+            </div>
+            <button
+              onClick={() => alternar(a.id)}
+              title={a.ativo ? "Pausar" : "Ativar"}
+              aria-label={a.ativo ? "Pausar anúncio" : "Ativar anúncio"}
+              className="grid size-9 place-items-center rounded-xl bg-white/70 text-brand"
+            >
+              <Power className="size-4" />
+            </button>
+            <button
+              onClick={() => setEdit(a)}
+              title="Editar"
+              aria-label="Editar anúncio"
+              className="grid size-9 place-items-center rounded-xl bg-white/70 text-brand"
+            >
+              <Pencil className="size-4" />
+            </button>
+            <button
+              onClick={() => remover(a.id)}
+              title="Excluir"
+              aria-label="Excluir anúncio"
+              className="grid size-9 place-items-center rounded-xl bg-white/70 text-destructive"
+            >
+              <Trash2 className="size-4" />
+            </button>
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
