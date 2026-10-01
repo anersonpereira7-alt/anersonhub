@@ -7,6 +7,7 @@ import { StoreCard } from "@/components/StoreCard";
 import { CouponDialog } from "@/components/CouponDialog";
 import perfilFoto from "@/assets/perfil.jpg";
 import { getHubContent } from "@/lib/hub.functions";
+import { AdBanner } from "@/components/AdBanner";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -53,7 +54,10 @@ function Home() {
         </div>
       </section>
 
+      <AdBanner local="home" slot={0} />
+
       <section className="mt-4">
+
         <div className="mb-2.5 flex items-center justify-between px-1">
           <h2 className="font-display text-sm font-semibold text-ink/80">Categorias</h2>
           <span className="text-[11px] text-ink/45">{categorias.length} áreas</span>
@@ -89,7 +93,10 @@ function Home() {
         </section>
       ) : null}
 
+      <AdBanner local="home" slot={1} />
+
       <SiteFooter />
+
       <CouponDialog loja={lojaAberta} onOpenChange={(o) => !o && setLojaAberta(null)} />
     </PageShell>
   );

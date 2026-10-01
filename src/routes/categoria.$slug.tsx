@@ -9,6 +9,7 @@ import { CouponDialog } from "@/components/CouponDialog";
 import { AgeGate } from "@/components/AgeGate";
 import { BettingAds } from "@/components/BettingAds";
 import { getHubContent } from "@/lib/hub.functions";
+import { AdBanner } from "@/components/AdBanner";
 
 export const Route = createFileRoute("/categoria/$slug")({
   head: ({ params }) => {
@@ -90,6 +91,8 @@ function CategoriaPage() {
           lojas.map((l) => <StoreCard key={l.id} loja={l} onVerCupons={setLojaAberta} />)
         )}
       </section>
+
+      {!precisaIdade ? <AdBanner local={categoria.id} /> : null}
 
       <Link to="/" className="mt-5 flex items-center gap-1.5 px-1 text-[13px] font-semibold text-brand">
         <ArrowLeft className="size-4" /> Todas as categorias
