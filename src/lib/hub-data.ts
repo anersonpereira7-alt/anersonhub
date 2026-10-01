@@ -29,11 +29,24 @@ export type Loja = {
 
 export type RedeSocial = { id: string; nome: string; iconId: string; url: string };
 
+export type Anuncio = {
+  id: string;
+  tag: string;
+  tipo: "imagem" | "script";
+  imagem?: string;
+  link?: string;
+  codigo?: string;
+  ativo: boolean;
+  home: boolean;
+  categorias: string[];
+};
+
 export type HubData = {
   perfil: { nome: string; descricao: string; marca: string; slogan: string; foto?: string };
   categorias: Categoria[];
   lojas: Loja[];
   redes: RedeSocial[];
+  anuncios?: Anuncio[];
   textos: { termos: string; privacidade: string };
 };
 
@@ -275,4 +288,11 @@ export function lojasDaCategoria(d: HubData, categoriaId: string) {
 
 export function categoriaPorSlug(d: HubData, slug: string) {
   return d.categorias.find((c) => c.slug === slug);
+}
+
+/** Anúncios ativos disponíveis para um local ("home" ou o id de uma categoria). */
+export function anunciosDe(d: HubData, local: string) {
+  return (d.anuncios ?? []).filter(
+    (a) => a.ativo && (local === "home" ? a.home : a.categorias.includes(local)),
+  );
 }
