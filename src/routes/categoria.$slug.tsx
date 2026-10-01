@@ -88,11 +88,16 @@ function CategoriaPage() {
             Ainda não há lojas cadastradas nesta categoria.
           </p>
         ) : (
-          lojas.map((l) => <StoreCard key={l.id} loja={l} onVerCupons={setLojaAberta} />)
+          lojas.map((l, i) => (
+            <div key={l.id} className="space-y-3">
+              <StoreCard loja={l} onVerCupons={setLojaAberta} />
+              {!precisaIdade && lojas.length >= 3 && i === 1 ? <AdBanner local={categoria.id} /> : null}
+            </div>
+          ))
         )}
       </section>
 
-      {!precisaIdade ? <AdBanner local={categoria.id} /> : null}
+      {!precisaIdade && lojas.length < 3 ? <AdBanner local={categoria.id} /> : null}
 
       <Link to="/" className="mt-5 flex items-center gap-1.5 px-1 text-[13px] font-semibold text-brand">
         <ArrowLeft className="size-4" /> Todas as categorias
