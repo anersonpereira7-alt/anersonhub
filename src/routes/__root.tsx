@@ -83,6 +83,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "Hub de cupons e links de afiliado por categoria." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "mitgo-verification", content: "d28caea5-f4f1-44d7-b430-a0bc25e4dad9" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
