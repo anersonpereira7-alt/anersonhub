@@ -20,26 +20,32 @@ export function AdBanner({ local, slot = 0 }: { local: string; slot?: number }) 
       setEscolhido(null);
       return;
     }
-    const i = (Math.floor(Math.random() * disponiveis.length) + slot) % disponiveis.length;
+    // Sorteio ponderado: anúncios destaque têm peso 2.
+    const pesos = disponiveis.map((a) => (a.destaque ? 2 : 1));
+    const total = pesos.reduce((s, p) => s + p, 0);
+    let r = Math.random() * total;
+    let i = 0;
+    for (; i < pesos.length - 1; i++) {
+      r -= pesos[i] ?? 1;
+      if (r < 0) break;
+    }
+    if (slot && disponiveis.length > 1) i = (i + slot) % disponiveis.length;
     setEscolhido(disponiveis[i] ?? null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [local, slot, disponiveis.map((a) => a.id).join(",")]);
+  }, [local, slot, disponiveis.map((a) => `${a.id}${a.destaque ? "*" : ""}`).join(",")]);
 
   if (!escolhido) return null;
 
   return (
-    <section
-      className="glass-panel mx-auto mt-4 flex w-fit max-w-full flex-col items-center rounded-2xl px-2.5 pb-2 pt-1.5"
-      aria-label="Publicidade"
-    >
-      <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-ink/35">Publicidade</p>
+    <section className="mx-auto mt-4 flex w-full max-w-[320px] flex-col items-center" aria-label="Publicidade">
+      <p className="mb-1 text-[9px] font-semibold uppercase tracking-wider text-ink/35">Publicidade</p>
       {escolhido.tipo === "imagem" && escolhido.imagem ? (
         escolhido.link ? (
-          <a href={escolhido.link} target="_blank" rel="noopener noreferrer sponsored" className="block max-w-full">
-            <img src={escolhido.imagem} alt={escolhido.tag} className="mx-auto block max-w-full rounded-lg" />
+          <a href={escolhido.link} target="_blank" rel="noopener noreferrer sponsored" className="block w-full">
+            <img src={escolhido.imagem} alt={escolhido.tag} className="block h-auto w-full rounded-xl" />
           </a>
         ) : (
-          <img src={escolhido.imagem} alt={escolhido.tag} className="mx-auto block max-w-full rounded-lg" />
+          <img src={escolhido.imagem} alt={escolhido.tag} className="block h-auto w-full rounded-xl" />
         )
       ) : escolhido.codigo ? (
         <iframe
@@ -47,7 +53,7 @@ export function AdBanner({ local, slot = 0 }: { local: string; slot?: number }) 
           srcDoc={docDe(escolhido.codigo)}
           sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
           scrolling="no"
-          className="mx-auto block h-[50px] w-[320px] max-w-full border-0"
+          className="block h-[50px] w-[320px] max-w-full overflow-hidden rounded-xl border-0"
         />
       ) : null}
     </section>

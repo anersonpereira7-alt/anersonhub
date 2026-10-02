@@ -37,6 +37,7 @@ export type Anuncio = {
   link?: string;
   codigo?: string;
   ativo: boolean;
+  destaque?: boolean;
   home: boolean;
   categorias: string[];
 };
