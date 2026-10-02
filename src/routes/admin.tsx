@@ -1,12 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowDown, ArrowUp, FolderCog, Globe2, Lock, LogOut, MessageCircle, Pencil, Plus, Power, ScrollText, Store, Trash2, Upload, UserRound } from "lucide-react";
+import { ArrowDown, ArrowUp, FolderCog, Globe2, Lock, LogOut, Megaphone, MessageCircle, Pencil, Plus, Power, ScrollText, Store, Trash2, Upload, UserRound } from "lucide-react";
 import perfilPadrao from "@/assets/perfil.jpg";
 import {
   setData,
   slugify,
   uid,
   useHubData,
+  type Anuncio,
   type Categoria,
   type Loja,
 } from "@/lib/hub-data";
@@ -131,6 +132,7 @@ function Admin() {
     ["categorias", "Categorias", FolderCog],
     ["lojas", "Lojas", Store],
     ["redes", "Redes sociais", Globe2],
+    ["publicidade", "Publicidade", Megaphone],
     ["textos", "Textos legais", ScrollText],
     ["perfil", "Perfil e acesso", UserRound],
     ["vini", "Vini", MessageCircle],
@@ -172,6 +174,7 @@ function Admin() {
           {aba === "categorias" && <Categorias />}
           {aba === "lojas" && <Lojas />}
           {aba === "redes" && <Redes />}
+          {aba === "publicidade" && <Anuncios />}
           {aba === "textos" && <Textos />}
           {aba === "perfil" && <Perfil />}
           {aba === "vini" && <ViniAssistant />}
