@@ -17,10 +17,14 @@ import {
   type PromptInputMessage,
 } from "@/components/ai-elements/prompt-input";
 import { ICON_LIBRARY } from "@/lib/icon-library";
-import { setData, slugify, uid, type HubData } from "@/lib/hub-data";
+import { getData, setData, slugify, uid, type HubData } from "@/lib/hub-data";
+import { conversarVini } from "@/lib/vini.functions";
 import vini3d from "@/assets/vini-3d.png";
 
 type Msg = { autor: "vini" | "voce"; texto: string };
+
+const RE_COMANDO =
+  /^(criar (categoria|loja)|(ativar|desativar) categoria|(excluir|apagar|remover) (categoria|loja|rede)|adicionar (cupom|rede))\s/;
 
 const AJUDA = `Posso fazer tudo no painel. Exemplos:
 • criar categoria Perfumes icone perfumes
@@ -246,21 +250,58 @@ export function executarComando(entrada: string): string {
 
 export function ViniAssistant() {
   const [msgs, setMsgs] = useState<Msg[]>([
-    { autor: "vini", texto: "Oi! Sou o Vini. Posso criar, editar ou excluir tudo no painel. Digite \"ajuda\" para ver exemplos." },
+    { autor: "vini", texto: "Oi! Sou o Vini. Pode bater papo comigo, tirar dúvidas sobre lojas e categorias, pedir ideias de divulgação — ou me dar comandos para mexer no painel. Digite \"ajuda\" para ver os comandos." },
   ]);
   const [input, setInput] = useState("");
+  const [pensando, setPensando] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
-  function enviar(message: PromptInputMessage) {
+  async function enviar(message: PromptInputMessage) {
     const texto = (message.text?.trim() ? message.text : input).trim();
-    if (!texto) return;
-    const resposta = executarComando(texto);
-    setMsgs((m) => [...m, { autor: "voce", texto }, { autor: "vini", texto: resposta }]);
+    if (!texto || pensando) return;
     setInput("");
+    const linhas = texto.split("\n").map((l) => semAcento(l.trim().toLowerCase())).filter(Boolean);
+    const soComandos =
+      /^ajuda$/.test(linhas[0] ?? "") ||
+      /^atualizar\s+(termos|privacidade)/.test(linhas[0] ?? "") ||
+      linhas.every((l) => RE_COMANDO.test(l.replace(/^[\s•\-*]+/, "")));
+    const historico = [...msgs, { autor: "voce" as const, texto }];
+    setMsgs(historico);
+    if (soComandos) {
+      setMsgs([...historico, { autor: "vini", texto: executarComando(texto) }]);
+    } else {
+      setPensando(true);
+      try {
+        const d = getData();
+        const contexto = JSON.stringify({
+          perfil: d.perfil,
+          categorias: d.categorias.map((c) => ({ nome: c.nome, descricao: c.descricao, restrita: c.restrita, ativa: c.ativa })),
+          lojas: d.lojas.map((l) => ({
+            nome: l.nome,
+            descricao: l.descricao,
+            url: l.url,
+            categorias: l.categorias.map((id) => d.categorias.find((c) => c.id === id)?.nome).filter(Boolean),
+            cupons: l.cupons.map((c) => c.codigo),
+          })),
+          icones: ICON_LIBRARY.map((i) => i.id),
+        });
+        const r = await conversarVini({
+          data: {
+            contexto,
+            mensagens: historico.slice(1).map((m) => ({ role: m.autor === "voce" ? "user" : "assistant", content: m.texto })),
+          },
+        });
+        setMsgs([...historico, { autor: "vini", texto: r.texto }]);
+      } catch {
+        setMsgs([...historico, { autor: "vini", texto: "Não consegui responder agora. Tente de novo." }]);
+      } finally {
+        setPensando(false);
+      }
+    }
     requestAnimationFrame(() => inputRef.current?.focus());
   }
 
