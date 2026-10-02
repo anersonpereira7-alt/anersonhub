@@ -880,6 +880,10 @@ function Anuncios() {
             <input type="checkbox" checked={edit.home} onChange={(e) => setEdit({ ...edit, home: e.target.checked })} />
             Exibir na página inicial
           </label>
+          <label className="flex items-center gap-2 text-[13px] text-ink/70">
+            <input type="checkbox" checked={!!edit.destaque} onChange={(e) => setEdit({ ...edit, destaque: e.target.checked })} />
+            Anúncio destaque (aparece com o dobro de chance)
+          </label>
 
           <fieldset>
             <legend className="mb-1.5 text-[12px] font-semibold text-ink/60">Categorias onde pode aparecer</legend>
@@ -928,6 +932,7 @@ function Anuncios() {
               <p className="truncate text-[14px] font-semibold">{a.tag || "Sem identificação"}</p>
               <p className="truncate text-[11px] text-ink/50">
                 {a.tipo === "imagem" ? "Banner próprio" : "Código do anunciante"} ·{" "}
+                {a.destaque ? "⭐ destaque · " : ""}
                 {a.ativo ? "ativo" : "pausado"} · {a.home ? "home" : "sem home"} ·{" "}
                 {a.categorias.length} categoria(s)
               </p>
