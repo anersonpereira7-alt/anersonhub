@@ -26,7 +26,7 @@ export function AdBanner({ local, slot = 0 }: { local: string; slot?: number }) 
     let r = Math.random() * total;
     let i = 0;
     for (; i < pesos.length - 1; i++) {
-      r -= pesos[i];
+      r -= pesos[i] ?? 1;
       if (r < 0) break;
     }
     if (slot && disponiveis.length > 1) i = (i + slot) % disponiveis.length;
