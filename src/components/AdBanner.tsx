@@ -21,7 +21,7 @@ export function AdBanner({ local, slot = 0 }: { local: string; slot?: number }) 
       return;
     }
     const i = (Math.floor(Math.random() * disponiveis.length) + slot) % disponiveis.length;
-    setEscolhido(disponiveis[i]);
+    setEscolhido(disponiveis[i] ?? null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [local, slot, disponiveis.map((a) => a.id).join(",")]);
 
