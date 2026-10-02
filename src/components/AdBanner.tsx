@@ -28,15 +28,18 @@ export function AdBanner({ local, slot = 0 }: { local: string; slot?: number }) 
   if (!escolhido) return null;
 
   return (
-    <section className="glass-panel mt-4 overflow-hidden rounded-2xl p-2.5" aria-label="Publicidade">
-      <p className="mb-1.5 px-1 text-[10px] font-semibold uppercase tracking-wide text-ink/35">Publicidade</p>
+    <section
+      className="glass-panel mx-auto mt-4 flex w-fit max-w-full flex-col items-center rounded-2xl px-2.5 pb-2 pt-1.5"
+      aria-label="Publicidade"
+    >
+      <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-ink/35">Publicidade</p>
       {escolhido.tipo === "imagem" && escolhido.imagem ? (
         escolhido.link ? (
-          <a href={escolhido.link} target="_blank" rel="noopener noreferrer sponsored" className="block">
-            <img src={escolhido.imagem} alt={escolhido.tag} className="mx-auto block max-w-full rounded-xl" />
+          <a href={escolhido.link} target="_blank" rel="noopener noreferrer sponsored" className="block max-w-full">
+            <img src={escolhido.imagem} alt={escolhido.tag} className="mx-auto block max-w-full rounded-lg" />
           </a>
         ) : (
-          <img src={escolhido.imagem} alt={escolhido.tag} className="mx-auto block max-w-full rounded-xl" />
+          <img src={escolhido.imagem} alt={escolhido.tag} className="mx-auto block max-w-full rounded-lg" />
         )
       ) : escolhido.codigo ? (
         <iframe
@@ -44,7 +47,7 @@ export function AdBanner({ local, slot = 0 }: { local: string; slot?: number }) 
           srcDoc={docDe(escolhido.codigo)}
           sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
           scrolling="no"
-          className="mx-auto block h-[110px] w-full max-w-[360px] border-0"
+          className="mx-auto block h-[50px] w-[320px] max-w-full border-0"
         />
       ) : null}
     </section>
