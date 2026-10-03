@@ -345,7 +345,7 @@ export function ViniAssistant() {
             aria-label="Mensagem para o Vini"
           />
           <PromptInputFooter className="justify-end">
-            <PromptInputSubmit disabled={!input.trim()} aria-label="Enviar mensagem" className="rounded-lg bg-primary text-primary-foreground" />
+            <PromptInputSubmit status={pensando ? "submitted" : undefined} disabled={pensando || !input.trim()} aria-label="Enviar mensagem" className="rounded-lg bg-primary text-primary-foreground" />
           </PromptInputFooter>
         </PromptInput>
       </div>
