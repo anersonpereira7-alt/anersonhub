@@ -7,6 +7,7 @@ import {
 import {
   Message,
   MessageContent,
+  MessageResponse,
 
 } from "@/components/ai-elements/message";
 import {
@@ -326,7 +327,7 @@ export function ViniAssistant() {
                     : "text-[13px] leading-relaxed text-foreground"
                 }
               >
-                <p className="whitespace-pre-wrap">{m.texto}</p>
+                {m.autor === "voce" ? <p className="whitespace-pre-wrap">{m.texto}</p> : <MessageResponse>{m.texto}</MessageResponse>}
               </MessageContent>
             </Message>
           ))}
@@ -345,7 +346,7 @@ export function ViniAssistant() {
             aria-label="Mensagem para o Vini"
           />
           <PromptInputFooter className="justify-end">
-            <PromptInputSubmit disabled={!input.trim()} aria-label="Enviar mensagem" className="rounded-lg bg-primary text-primary-foreground" />
+            <PromptInputSubmit status={pensando ? "submitted" : "ready"} disabled={pensando || !input.trim()} aria-label="Enviar mensagem" className="rounded-lg bg-primary text-primary-foreground" />
           </PromptInputFooter>
         </PromptInput>
       </div>

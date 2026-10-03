@@ -22,7 +22,7 @@ export const conversarVini = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!papel) return { texto: "Somente administradores podem conversar com o Vini." };
 
-    const key = process.env.LOVABLE_API_KEY;
+    const key = process.env["LOVABLE_API_KEY"];
     if (!key) return { texto: "O assistente está indisponível no momento." };
 
     const sistema = `Você é o Vini, assistente simpático do painel de um hub de cupons e links de afiliado no Brasil. Responda em português do Brasil, de forma curta, prática e amigável, em texto simples (sem markdown pesado). Ajude o administrador a: tirar dúvidas, ter ideias de divulgação, escolher categorias, escrever descrições e explicar o que uma loja vende e para quem ela é (se não tiver certeza sobre a loja, diga isso e dê pistas de como confirmar). Você também executa ações no painel quando o usuário escreve comandos como "criar categoria X icone Y", "criar loja X na categoria Y link URL", "adicionar cupom CODIGO na loja X descrição", "ativar/desativar/excluir categoria X", "excluir loja X", "adicionar rede X icone Y link URL", "atualizar termos: texto". Quando sugerir uma ação, mostre o comando exato para o usuário copiar.
