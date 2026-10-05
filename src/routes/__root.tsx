@@ -110,6 +110,14 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="pt-BR">
       <head>
         <HeadContent />
+        <meta name="impact-site-verification" value="624870d0-4541-44cc-8915-91472a6bfdbc" />
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZERDT4S10W" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "window.dataLayer = window.dataLayer || [];\nfunction gtag(){dataLayer.push(arguments);}\ngtag('js', new Date());\ngtag('config', 'G-ZERDT4S10W');",
+          }}
+        />
       </head>
       <body>
         {children}
