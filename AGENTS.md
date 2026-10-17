@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Keep third-party advertising scripts inside sandboxed iframes scoped to their intended page, preventing injected markup from disrupting site navigation.
+- Use the approved raster logo on the home page and derive the favicon from its coupon symbol to keep branding consistent.
