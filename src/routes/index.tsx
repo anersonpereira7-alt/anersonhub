@@ -6,18 +6,21 @@ import { PageShell, SiteFooter } from "@/components/SiteChrome";
 import { StoreCard } from "@/components/StoreCard";
 import { CouponDialog } from "@/components/CouponDialog";
 import perfilFoto from "@/assets/perfil.jpg";
+import anersonLogo from "@/assets/anerson-logo.png";
 import { getHubContent } from "@/lib/hub.functions";
 import { AdBanner } from "@/components/AdBanner";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "CupomHub · Cupons e ofertas selecionadas" },
+      { title: "Anerson Hub de Ofertas · Cupons e ofertas selecionadas" },
       {
         name: "description",
         content: "Hub de cupons e links de afiliado: categorias, lojas parceiras e códigos de desconto atualizados.",
       },
-      { property: "og:title", content: "CupomHub · Cupons e ofertas selecionadas" },
+      { property: "og:title", content: "Anerson Hub de Ofertas · Cupons e ofertas selecionadas" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       {
         property: "og:description",
         content: "Encontre cupons de desconto por categoria e acesse as lojas parceiras em um toque.",
@@ -40,6 +43,13 @@ function Home() {
 
   return (
     <PageShell>
+      <img
+        src={anersonLogo}
+        alt="Anerson Hub de Ofertas"
+        width={1321}
+        height={297}
+        className="mx-auto mb-4 mt-1 block h-auto w-full max-w-[360px]"
+      />
       <section className="glass-panel flex items-center gap-3 rounded-2xl p-3.5">
         <img
           src={data.perfil.foto || perfilFoto}
