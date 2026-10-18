@@ -97,6 +97,45 @@ export const salvarResumo = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+const PROMPT_ROTEIRO = `Você é o Vini, assistente do Anerson Hub de Ofertas.
+Você vai transformar um artigo em roteiro de áudio, para ser lido em voz alta.
+Regras:
+- Português do Brasil, tom de conversa, acolhedor.
+- Comece com uma saudação curta e diga o nome do site (Anerson Hub de Ofertas).
+- Explique o assunto com palavras simples, de conversa de padaria. Nada de termo técnico e nada de inglês quando existir a palavra em português.
+- Frases curtas. Sem listas, sem markdown, sem títulos, sem asteriscos.
+- Termine com uma despedida curta.
+- No máximo 250 palavras.`;
+
+/** O Vini escreve o roteiro que será lido no áudio (com saudação e despedida). */
+export const gerarRoteiro = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { texto: string }) => ({ texto: String(d?.texto ?? "").slice(0, 12000) }))
+  .handler(async ({ data }) => {
+    if (!data.texto.trim()) throw new Error("O artigo ainda não tem texto para o Vini ler.");
+    const res = await fetch(`${GATEWAY}/v1/responses`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env["LOVABLE_API_KEY"]}`,
+        "Content-Type": "application/json",
+        "X-Lovable-AIG-SDK": "fetch",
+      },
+      body: JSON.stringify({
+        model: MODELO_RESUMO,
+        store: false,
+        stream: true,
+        reasoning: { effort: "low" },
+        input: [
+          { role: "system", content: PROMPT_ROTEIRO },
+          { role: "user", content: data.texto },
+        ],
+      }),
+    });
+    const texto = await lerSSE(res);
+    if (!texto) throw new Error("O Vini não conseguiu escrever o roteiro agora. Tente de novo.");
+    return { texto: texto.slice(0, 2600) };
+  });
+
 /**
  * Converte o roteiro do artigo em fala e guarda na nuvem.
  * Gera uma vez só: depois é só apertar play, sem gastar créditos de novo.
