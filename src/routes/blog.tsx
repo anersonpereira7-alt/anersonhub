@@ -103,7 +103,7 @@ function CardArtigo({ artigo }: { artigo: Artigo }) {
             {artigo.tempoLeitura || 1} min
           </span>
           {artigo.destaque && (
-            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+            <span className="rounded-full bg-brand/10 px-2 py-0.5 text-[10px] font-semibold text-brand">
               em alta
             </span>
           )}
