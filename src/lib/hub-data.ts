@@ -344,12 +344,22 @@ export function pesoDe(a: Anuncio): number {
   return a.peso ?? (a.destaque ? 2 : 1);
 }
 
-/** Anúncios ativos disponíveis para um local ("home", "blog" ou o id de uma categoria). */
+/**
+ * Anúncios ativos disponíveis para um local.
+ * "home", "blog", o id de uma categoria, ou "bloco" (dentro de um artigo,
+ * onde a lista de anúncios autorizados vem do próprio bloco).
+ */
 export function anunciosDe(d: HubData, local: string) {
   return (d.anuncios ?? []).filter(
     (a) =>
       a.ativo &&
-      (local === "home" ? a.home : local === "blog" ? !!a.blog : a.categorias.includes(local)),
+      (local === "bloco"
+        ? true
+        : local === "home"
+          ? a.home
+          : local === "blog"
+            ? !!a.blog
+            : a.categorias.includes(local)),
   );
 }
 
