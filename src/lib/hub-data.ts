@@ -29,6 +29,26 @@ export type Loja = {
 
 export type RedeSocial = { id: string; nome: string; iconId: string; url: string };
 
+/** Formatos aceitos para os banners. As medidas são as artes indicadas aos anunciantes. */
+export type FormatoAnuncio = "barra" | "retangulo" | "quadrado" | "feed" | "grande";
+
+export const FORMATOS: Record<FormatoAnuncio, { label: string; largura: number; altura: number }> = {
+  barra: { label: "Barra mobile · 320×50", largura: 320, altura: 50 },
+  retangulo: { label: "Retângulo médio · 300×250", largura: 300, altura: 250 },
+  quadrado: { label: "Quadrado · 300×300", largura: 300, altura: 300 },
+  feed: { label: "Feed (quadrado grande) · 600×600", largura: 600, altura: 600 },
+  grande: { label: "Banner grande mobile · 320×600", largura: 320, altura: 600 },
+};
+
+/** Níveis de chance no sorteio: padrão, dobro ou quádruplo. */
+export type PesoAnuncio = 1 | 2 | 4;
+
+export const PESOS: Record<PesoAnuncio, string> = {
+  1: "Padrão",
+  2: "Dobro de chance",
+  4: "Quádruplo de chance",
+};
+
 export type Anuncio = {
   id: string;
   tag: string;
@@ -38,8 +58,34 @@ export type Anuncio = {
   codigo?: string;
   ativo: boolean;
   destaque?: boolean;
+  peso?: PesoAnuncio;
+  formato?: FormatoAnuncio;
   home: boolean;
+  blog?: boolean;
   categorias: string[];
+};
+
+/** Blocos que formam um artigo do blog. */
+export type Bloco =
+  | { id: string; tipo: "texto"; texto: string }
+  | { id: string; tipo: "titulo"; texto: string }
+  | { id: string; tipo: "anuncio"; anuncios: string[] };
+
+export type Artigo = {
+  id: string;
+  titulo: string;
+  slug: string;
+  resumo: string;
+  tempoLeitura: number;
+  ativo: boolean;
+  destaque: boolean;
+  imagem?: string;
+  categorias: string[];
+  blocos: Bloco[];
+  textoNarracao: string;
+  temAudio: boolean;
+  temResumo: boolean;
+  criadoEm: string;
 };
 
 export type HubData = {
@@ -48,6 +94,7 @@ export type HubData = {
   lojas: Loja[];
   redes: RedeSocial[];
   anuncios?: Anuncio[];
+  artigos?: Artigo[];
   textos: { termos: string; privacidade: string };
 };
 
@@ -196,6 +243,7 @@ export const DEFAULT_DATA: HubData = {
     { id: "r3", nome: "YouTube", iconId: "youtube", url: "https://youtube.com" },
     { id: "r4", nome: "WhatsApp", iconId: "message-circle", url: "https://wa.me/5500000000000" },
   ],
+  artigos: [],
   textos: {
     termos:
       "Este site reúne links de afiliado e cupons de lojas parceiras. Ao clicar em um link você é redirecionado ao site da loja, onde valem os termos e condições dela. Podemos receber comissão pelas compras realizadas, sem custo adicional para você. Cupons podem expirar ou ser alterados pelas lojas sem aviso prévio.",
@@ -291,9 +339,65 @@ export function categoriaPorSlug(d: HubData, slug: string) {
   return d.categorias.find((c) => c.slug === slug);
 }
 
-/** Anúncios ativos disponíveis para um local ("home" ou o id de uma categoria). */
+/** Chance real de cada anúncio no sorteio. */
+export function pesoDe(a: Anuncio): number {
+  return a.peso ?? (a.destaque ? 2 : 1);
+}
+
+/**
+ * Anúncios ativos disponíveis para um local.
+ * "home", "blog", o id de uma categoria, ou "bloco" (dentro de um artigo,
+ * onde a lista de anúncios autorizados vem do próprio bloco).
+ */
 export function anunciosDe(d: HubData, local: string) {
   return (d.anuncios ?? []).filter(
-    (a) => a.ativo && (local === "home" ? a.home : a.categorias.includes(local)),
+    (a) =>
+      a.ativo &&
+      (local === "bloco"
+        ? true
+        : local === "home"
+          ? a.home
+          : local === "blog"
+            ? !!a.blog
+            : a.categorias.includes(local)),
   );
+}
+
+/** Sorteio ponderado: um anúncio com peso 4 entra 4 vezes mais que um com peso 1. */
+export function sortearAnuncio<T extends { peso?: PesoAnuncio; destaque?: boolean }>(lista: T[]): T | null {
+  if (lista.length === 0) return null;
+  if (lista.length === 1) return lista[0] ?? null;
+  const pesos = lista.map((a) => (a.peso ?? (a.destaque ? 2 : 1)));
+  const total = pesos.reduce((s, p) => s + p, 0);
+  let r = Math.random() * total;
+  for (let i = 0; i < pesos.length; i++) {
+    r -= pesos[i] ?? 1;
+    if (r < 0) return lista[i] ?? null;
+  }
+  return lista[lista.length - 1] ?? null;
+}
+
+/* ----------------------------- Blog ----------------------------- */
+
+/** Texto puro de um artigo (títulos + parágrafos), usado na leitura estimada e no Vini. */
+export function textoDoArtigo(a: Artigo): string {
+  return a.blocos
+    .filter((b) => b.tipo !== "anuncio")
+    .map((b) => ("texto" in b ? b.texto : ""))
+    .join("\n\n")
+    .trim();
+}
+
+/** Tempo de leitura em minutos, contandopor 200 palavras por minuto. */
+export function tempoDeLeitura(texto: string): number {
+  const palavras = texto.trim().split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(palavras / 200));
+}
+
+export function artigoPorSlug(d: HubData, slug: string) {
+  return (d.artigos ?? []).find((a) => a.slug === slug);
+}
+
+export function artigosAtivos(d: HubData) {
+  return (d.artigos ?? []).filter((a) => a.ativo);
 }

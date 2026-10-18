@@ -1,61 +1,86 @@
-import { useEffect, useState } from "react";
-import { anunciosDe, useHubData, type Anuncio } from "@/lib/hub-data";
-
-/** Envolve o código do anunciante num documento isolado. */
-function docDe(codigo: string) {
-  return `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0;padding:0;display:flex;align-items:center;justify-content:center;background:transparent;overflow:hidden}</style></head><body>${codigo}</body></html>`;
-}
+import { useMemo } from "react";
+import { useHubData, anunciosDe, sortearAnuncio, FORMATOS, type Anuncio, type FormatoAnuncio } from "@/lib/hub-data";
 
 /**
- * Espaço publicitário com sorteio aleatório entre os anúncios ativos do local.
- * `local` é "home" ou o id da categoria. `slot` separa espaços na mesma página.
+ * Espaço publicitário do hub.
+ * O container acompanha o tamanho da arte (320×50, 300×250, quadrado, 320×600)
+ * para o banner não ficar solto dentro de uma caixa grande.
  */
-export function AdBanner({ local, slot = 0 }: { local: string; slot?: number }) {
-  const data = useHubData();
-  const disponiveis = anunciosDe(data, local);
-  const [escolhido, setEscolhido] = useState<Anuncio | null>(null);
+export function AdBanner({
+  local,
+  slot = 0,
+  formato = "barra",
+  apenasIds,
+  rotulo = "Publicidade",
+}: {
+  local: string;
+  slot?: number;
+  formato?: FormatoAnuncio;
+  apenasIds?: string[];
+  rotulo?: string;
+}) {
+  const d = useHubData();
+  const lista = useMemo(
+    () => anunciosDe(d, local).filter((a) => !apenasIds || apenasIds.includes(a.id)),
+    [d, local, apenasIds],
+  );
+  const escolha = useMemo(() => sortearAnuncio(lista), [lista]);
+  if (!escolha) return null;
+  return <AnuncioView anuncio={escolha} formato={formato} rotulo={rotulo} slot={slot} />;
+}
 
-  useEffect(() => {
-    if (disponiveis.length === 0) {
-      setEscolhido(null);
-      return;
-    }
-    // Sorteio ponderado: anúncios destaque têm peso 2.
-    const pesos = disponiveis.map((a) => (a.destaque ? 2 : 1));
-    const total = pesos.reduce((s, p) => s + p, 0);
-    let r = Math.random() * total;
-    let i = 0;
-    for (; i < pesos.length - 1; i++) {
-      r -= pesos[i] ?? 1;
-      if (r < 0) break;
-    }
-    if (slot && disponiveis.length > 1) i = (i + slot) % disponiveis.length;
-    setEscolhido(disponiveis[i] ?? null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [local, slot, disponiveis.map((a) => `${a.id}${a.destaque ? "*" : ""}`).join(",")]);
+function docDe(a: Anuncio) {
+  const body = (a.codigo ?? "").trim();
+  const html = `<!doctype html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>html,body{margin:0;padding:0;overflow:hidden;background:transparent}</style>
+</head><body>${body}</body></html>`;
+  return `data:text/html;charset=utf-8,${encodeURIComponent(html)}`;
+}
 
-  if (!escolhido) return null;
+export function AnuncioView({
+  anuncio,
+  formato = "barra",
+  rotulo = "Publicidade",
+  slot = 0,
+}: {
+  anuncio: Anuncio;
+  formato?: FormatoAnuncio;
+  rotulo?: string;
+  slot?: number;
+}) {
+  const medida = FORMATOS[formato] ?? FORMATOS.barra;
+  const estilo = { width: medida.largura, maxWidth: "100%" as const };
 
   return (
-    <section className="mx-auto mt-4 flex w-full max-w-[320px] flex-col items-center" aria-label="Publicidade">
-      <p className="mb-1 text-[9px] font-semibold uppercase tracking-wider text-ink/35">Publicidade</p>
-      {escolhido.tipo === "imagem" && escolhido.imagem ? (
-        escolhido.link ? (
-          <a href={escolhido.link} target="_blank" rel="noopener noreferrer sponsored" className="block w-full">
-            <img src={escolhido.imagem} alt={escolhido.tag} className="block h-auto w-full rounded-xl" />
-          </a>
-        ) : (
-          <img src={escolhido.imagem} alt={escolhido.tag} className="block h-auto w-full rounded-xl" />
-        )
-      ) : escolhido.codigo ? (
+    <div className="my-5 flex flex-col items-center gap-1.5" style={{ maxWidth: medida.largura }} data-slot={slot}>
+      <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-ink/35">{rotulo}</span>
+      {anuncio.tipo === "script" ? (
         <iframe
-          title={`Anúncio ${escolhido.tag}`}
-          srcDoc={docDe(escolhido.codigo)}
-          sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
+          key={anuncio.id}
+          title={anuncio.tag}
+          sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox allow-same-origin"
+          srcDoc={docDe(anuncio)}
+          className="block rounded-xl border-0 bg-transparent"
+          style={{ height: medida.altura, ...estilo }}
           scrolling="no"
-          className="block h-[50px] w-[320px] max-w-full overflow-hidden rounded-xl border-0"
         />
+      ) : anuncio.imagem ? (
+        <a
+          href={anuncio.link || undefined}
+          target={anuncio.link ? "_blank" : undefined}
+          rel="noopener noreferrer"
+          className="block overflow-hidden rounded-xl"
+          style={estilo}
+        >
+          <img
+            src={anuncio.imagem}
+            alt={anuncio.tag}
+            className="block h-auto w-full"
+            style={{ aspectRatio: `${medida.largura} / ${medida.altura}`, objectFit: "cover" }}
+          />
+        </a>
       ) : null}
-    </section>
+    </div>
   );
 }

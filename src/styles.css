@@ -125,3 +125,80 @@
     box-shadow: 0 0 0 8px color-mix(in oklab, var(--brand) 0%, transparent);
   }
 }
+
+/* ---------- Blog: respiro, letra ajustável e o cartão do resumo do Vini ---------- */
+
+@property --ang {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.artigo {
+  font-size: calc(1rem * var(--fs, 1));
+  color: color-mix(in oklab, var(--ink) 88%, transparent);
+}
+.artigo p {
+  font-size: 1.06em;
+  line-height: 1.9;
+  margin-bottom: 1.5em;
+  text-wrap: pretty;
+}
+.artigo h2 {
+  font-size: 1.3em;
+  font-weight: 700;
+  line-height: 1.35;
+  margin: 1.6em 0 0.7em;
+  color: var(--ink);
+}
+.artigo > *:first-child {
+  margin-top: 0;
+}
+
+/* Borda em movimento do resumo do Vini: azul royal -> ciano -> azul royal */
+.resumo-borda {
+  position: relative;
+  border-radius: 1rem;
+}
+.resumo-borda::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: conic-gradient(from var(--ang), var(--brand), var(--cyan), var(--brand));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: bordaGirar 3.2s linear infinite;
+  pointer-events: none;
+}
+@keyframes bordaGirar {
+  to {
+    --ang: 360deg;
+  }
+}
+
+.animar-entrada {
+  animation: entradaResumo 0.45s ease-out both;
+}
+@keyframes entradaResumo {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .resumo-borda::before {
+    animation: none;
+  }
+  .animar-entrada {
+    animation: none;
+  }
+}

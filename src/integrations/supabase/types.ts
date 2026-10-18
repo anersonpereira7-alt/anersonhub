@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      blog_extras: {
+        Row: {
+          artigo_id: string
+          atualizado_em: string
+          audio: string
+          mime: string
+          resumo: string
+        }
+        Insert: {
+          artigo_id: string
+          atualizado_em?: string
+          audio?: string
+          mime?: string
+          resumo?: string
+        }
+        Update: {
+          artigo_id?: string
+          atualizado_em?: string
+          audio?: string
+          mime?: string
+          resumo?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
