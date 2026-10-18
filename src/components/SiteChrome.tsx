@@ -21,7 +21,15 @@ export function SiteFooter() {
           </a>
         ))}
       </div>
-      <div className="mt-4 flex items-center justify-center gap-4 text-[12px] font-medium text-ink/55">
+      <div className="mt-4 flex justify-center">
+        <Link
+          to="/blog"
+          className="rounded-xl border border-brand/25 bg-brand/8 px-5 py-2 text-[13px] font-bold text-brand transition active:scale-95 hover:bg-brand/15"
+        >
+          Blog
+        </Link>
+      </div>
+      <div className="mt-3 flex items-center justify-center gap-4 text-[12px] font-medium text-ink/55">
         <Link to="/termos">Termos</Link>
         <span className="size-1 rounded-full bg-ink/20" />
         <Link to="/privacidade">Privacidade</Link>
