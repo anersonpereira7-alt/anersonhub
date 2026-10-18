@@ -19,10 +19,10 @@ export function AdBanner({
   apenasIds?: string[];
   rotulo?: string;
 }) {
-  const { anuncios } = useHubData();
+  const d = useHubData();
   const lista = useMemo(
-    () => anunciosDe({ anuncios } as never, local).filter((a) => !apenasIds || apenasIds.includes(a.id)),
-    [anuncios, local, apenasIds],
+    () => anunciosDe(d, local).filter((a) => !apenasIds || apenasIds.includes(a.id)),
+    [d, local, apenasIds],
   );
   const escolha = useMemo(() => sortearAnuncio(lista), [lista]);
   if (!escolha) return null;
