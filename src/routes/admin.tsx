@@ -901,9 +901,46 @@ function Anuncios() {
             <input type="checkbox" checked={edit.home} onChange={(e) => setEdit({ ...edit, home: e.target.checked })} />
             Exibir na página inicial
           </label>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <label className="block">
+              <span className="mb-1 block text-[12px] font-semibold text-ink/60">Tamanho da arte</span>
+              <select
+                className={campo}
+                value={edit.formato ?? "barra"}
+                onChange={(e) => setEdit({ ...edit, formato: e.target.value as FormatoAnuncio })}
+              >
+                {(Object.keys(FORMATOS) as FormatoAnuncio[]).map((f) => (
+                  <option key={f} value={f}>
+                    {FORMATOS[f].label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-[12px] font-semibold text-ink/60">Chance no sorteio</span>
+              <select
+                className={campo}
+                value={String(edit.peso ?? (edit.destaque ? 2 : 1))}
+                onChange={(e) => {
+                  const p = Number(e.target.value) as PesoAnuncio;
+                  setEdit({ ...edit, peso: p, destaque: p > 1 });
+                }}
+              >
+                {([1, 2, 4] as PesoAnuncio[]).map((p) => (
+                  <option key={p} value={p}>
+                    {PESOS[p]}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
           <label className="flex items-center gap-2 text-[13px] text-ink/70">
-            <input type="checkbox" checked={!!edit.destaque} onChange={(e) => setEdit({ ...edit, destaque: e.target.checked })} />
-            Anúncio destaque (aparece com o dobro de chance)
+            <input
+              type="checkbox"
+              checked={!!edit.blog}
+              onChange={(e) => setEdit({ ...edit, blog: e.target.checked })}
+            />
+            Exibir no blog
           </label>
 
           <fieldset>
@@ -953,9 +990,10 @@ function Anuncios() {
               <p className="truncate text-[14px] font-semibold">{a.tag || "Sem identificação"}</p>
               <p className="truncate text-[11px] text-ink/50">
                 {a.tipo === "imagem" ? "Banner próprio" : "Código do anunciante"} ·{" "}
-                {a.destaque ? "⭐ destaque · " : ""}
+                {(FORMATOS[a.formato ?? "barra"] ?? FORMATOS.barra).label} ·{" "}
+                {PESOS[(a.peso ?? (a.destaque ? 2 : 1)) as PesoAnuncio]} ·{" "}
                 {a.ativo ? "ativo" : "pausado"} · {a.home ? "home" : "sem home"} ·{" "}
-                {a.categorias.length} categoria(s)
+                {a.blog ? "blog" : "sem blog"} · {a.categorias.length} categoria(s)
               </p>
             </div>
             <button
