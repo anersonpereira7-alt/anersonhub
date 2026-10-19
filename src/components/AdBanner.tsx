@@ -50,10 +50,15 @@ export function AnuncioView({
   slot?: number;
 }) {
   const medida = FORMATOS[formato] ?? FORMATOS.barra;
-  const estilo = { width: medida.largura, maxWidth: "100%" as const };
+  const frameStyle = {
+    width: "100%",
+    maxWidth: medida.largura,
+    height: medida.altura,
+    display: "block" as const,
+  };
 
   return (
-    <div className="my-5 flex flex-col items-center gap-1.5" style={{ maxWidth: medida.largura }} data-slot={slot}>
+    <div className="my-5 flex flex-col items-center gap-1.5" style={{ width: "100%", maxWidth: medida.largura }} data-slot={slot}>
       <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-ink/35">{rotulo}</span>
       {anuncio.tipo === "script" ? (
         <iframe
@@ -62,7 +67,7 @@ export function AnuncioView({
           sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox allow-same-origin"
           srcDoc={docDe(anuncio)}
           className="block rounded-xl border-0 bg-transparent"
-          style={{ height: medida.altura, ...estilo }}
+          style={frameStyle}
           scrolling="no"
         />
       ) : anuncio.imagem ? (
@@ -71,16 +76,21 @@ export function AnuncioView({
           target={anuncio.link ? "_blank" : undefined}
           rel="noopener noreferrer"
           className="block overflow-hidden rounded-xl"
-          style={estilo}
+          style={{ width: "100%", maxWidth: medida.largura }}
         >
           <img
             src={anuncio.imagem}
             alt={anuncio.tag}
             className="block h-auto w-full"
-            style={{ aspectRatio: `${medida.largura} / ${medida.altura}`, objectFit: "cover" }}
+            style={{
+              width: "100%",
+              aspectRatio: `${medida.largura} / ${medida.altura}`,
+              objectFit: "cover",
+            }}
           />
         </a>
       ) : null}
     </div>
   );
 }
+
