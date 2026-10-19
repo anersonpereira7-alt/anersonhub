@@ -137,15 +137,47 @@ function ArtigoPagina() {
         )}
 
         <div className="artigo mt-4" style={{ "--fs": escala } as React.CSSProperties}>
-          {artigo.blocos.map((b) =>
-            b.tipo === "titulo" ? (
-              <h2 key={b.id}>{b.texto}</h2>
-            ) : b.tipo === "texto" ? (
-              <p key={b.id}>{b.texto}</p>
-            ) : (
-              <AdBanner key={b.id} local="bloco" formato="retangulo" apenasIds={b.anuncios} slot={0} />
-            ),
-          )}
+          {artigo.blocos.map((b) => {
+            if (b.tipo === "titulo") return <h2 key={b.id}>{b.texto}</h2>;
+            if (b.tipo === "texto") return <p key={b.id}>{b.texto}</p>;
+            if (b.tipo === "link") {
+              const buttonClass =
+                "mt-3 inline-flex w-full items-center justify-between gap-3 rounded-2xl border border-brand/30 bg-gradient-to-r from-brand/10 via-violet/10 to-brand/5 px-4 py-3 text-left text-[15px] font-semibold text-ink shadow-sm transition hover:opacity-95";
+
+              if (b.destino === "categoria") {
+                return (
+                  <Link
+                    key={b.id}
+                    to="/categoria/$slug"
+                    params={{ slug: b.categoriaSlug || "" }}
+                    className={buttonClass}
+                  >
+                    <span>{b.texto || "Ver ofertas"}</span>
+                    <span aria-hidden="true" className="text-lg">
+                      →
+                    </span>
+                  </Link>
+                );
+              }
+
+              return (
+                <a
+                  key={b.id}
+                  href={b.url || "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={buttonClass}
+                >
+                  <span>{b.texto || "Acessar link"}</span>
+                  <span aria-hidden="true" className="text-lg">
+                    →
+                  </span>
+                </a>
+              );
+            }
+
+            return <AdBanner key={b.id} local="bloco" formato="retangulo" apenasIds={b.anuncios} slot={0} />;
+          })}
         </div>
 
         <AdBanner local="blog" slot={2} />
@@ -155,3 +187,4 @@ function ArtigoPagina() {
     </PageShell>
   );
 }
+

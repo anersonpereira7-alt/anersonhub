@@ -69,7 +69,15 @@ export type Anuncio = {
 export type Bloco =
   | { id: string; tipo: "texto"; texto: string }
   | { id: string; tipo: "titulo"; texto: string }
-  | { id: string; tipo: "anuncio"; anuncios: string[] };
+  | { id: string; tipo: "anuncio"; anuncios: string[] }
+  | {
+      id: string;
+      tipo: "link";
+      texto: string;
+      destino: "categoria" | "direto";
+      categoriaSlug?: string;
+      url?: string;
+    };
 
 export type Artigo = {
   id: string;
@@ -246,9 +254,9 @@ export const DEFAULT_DATA: HubData = {
   artigos: [],
   textos: {
     termos:
-      "Este site reúne links de afiliado e cupons de lojas parceiras. Ao clicar em um link você é redirecionado ao site da loja, onde valem os termos e condições dela. Podemos receber comissão pelas compras realizadas, sem custo adicional para você. Cupons podem expirar ou ser alterados pelas lojas sem aviso prévio.",
+      "Este site reúne links de afiliado e cupons de lojas parceiras. Ao clicar em um link você é redirecionado ao site da loja, onde valem os termos e condições dela. Podemos receber comissão quando você compra por nossos links.",
     privacidade:
-      "Não coletamos dados pessoais sensíveis. Podemos usar métricas anônimas de navegação para melhorar o site. Ao acessar lojas parceiras, seus dados passam a ser tratados conforme a política de privacidade de cada loja. Dúvidas sobre seus dados podem ser enviadas pelos nossos canais de contato.",
+      "Não coletamos dados pessoais sensíveis. Podemos usar métricas anônimas de navegação para melhorar o site. Ao acessar lojas parceiras, seus dados passam a ser tratados conforme a política da loja." ,
   },
 };
 
@@ -367,7 +375,7 @@ export function anunciosDe(d: HubData, local: string) {
 export function sortearAnuncio<T extends { peso?: PesoAnuncio; destaque?: boolean }>(lista: T[]): T | null {
   if (lista.length === 0) return null;
   if (lista.length === 1) return lista[0] ?? null;
-  const pesos = lista.map((a) => (a.peso ?? (a.destaque ? 2 : 1)));
+  const pesos = lista.map((a) => a.peso ?? (a.destaque ? 2 : 1));
   const total = pesos.reduce((s, p) => s + p, 0);
   let r = Math.random() * total;
   for (let i = 0; i < pesos.length; i++) {
@@ -388,7 +396,7 @@ export function textoDoArtigo(a: Artigo): string {
     .trim();
 }
 
-/** Tempo de leitura em minutos, contandopor 200 palavras por minuto. */
+/** Tempo de leitura em minutos, contando por 200 palavras por minuto. */
 export function tempoDeLeitura(texto: string): number {
   const palavras = texto.trim().split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.round(palavras / 200));
@@ -401,3 +409,4 @@ export function artigoPorSlug(d: HubData, slug: string) {
 export function artigosAtivos(d: HubData) {
   return (d.artigos ?? []).filter((a) => a.ativo);
 }
+

@@ -54,7 +54,6 @@ const botao =
 const botaoSec =
   "rounded-xl border border-brand/30 bg-white/70 px-3 py-2.5 text-[13px] font-semibold text-brand transition active:scale-95";
 
-/** Lê a imagem enviada e devolve um JPEG quadrado reduzido em data URL. */
 async function redimensionarImagem(file: File, lado: number): Promise<string> {
   const bitmap = await createImageBitmap(file);
   const corte = Math.min(bitmap.width, bitmap.height);
@@ -77,7 +76,6 @@ async function redimensionarImagem(file: File, lado: number): Promise<string> {
   bitmap.close();
   return canvas.toDataURL("image/jpeg", 0.85);
 }
-
 
 function Admin() {
   const [logado, setLogado] = useState(false);
@@ -213,19 +211,7 @@ function IconPicker({ value, onChange }: { value: string; onChange: (v: string) 
       <legend className="mb-2 text-[12px] font-semibold text-ink/60">Escolha o ícone</legend>
       <div className="grid max-h-72 grid-cols-4 gap-2 overflow-y-auto rounded-xl border border-glass-border bg-background/40 p-2 sm:grid-cols-6">
         {ICON_LIBRARY.map((i) => (
-          <button
-            key={i.id}
-            type="button"
-            title={i.label}
-            aria-label={i.label}
-            aria-pressed={value === i.id}
-            onClick={() => onChange(i.id)}
-            className={
-              value === i.id
-                ? "flex min-w-0 flex-col items-center gap-2 rounded-xl bg-brand/10 p-2"
-                : "flex min-w-0 flex-col items-center gap-2 rounded-xl bg-white/60 p-2"
-            }
-          >
+          <button key={i.id} type="button" title={i.label} aria-label={i.label} aria-pressed={value === i.id} onClick={() => onChange(i.id)} className={value === i.id ? "flex min-w-0 flex-col items-center gap-1 rounded-lg border border-brand bg-brand/8 p-2 text-center" : "flex min-w-0 flex-col items-center gap-1 rounded-lg border border-transparent p-2 text-center"}>
             <Icon3D iconId={i.id} className="size-10" />
             <span className="w-full truncate text-[10px] font-medium text-ink/70">{i.label}</span>
           </button>
@@ -261,7 +247,6 @@ function Categorias() {
     setEditando(null);
   }
 
-  /** Move a categoria da posição i em `delta` posições. */
   function mover(i: number, delta: number) {
     setData((d) => {
       const lista = [...d.categorias];
@@ -364,8 +349,8 @@ function Categorias() {
           >
             <Power className="size-4" />
           </button>
-           <button title="Editar categoria" aria-label="Editar categoria" onClick={() => setEditando({ ...c })} className="grid size-9 place-items-center rounded-xl bg-white/70 text-brand">
-             <Pencil className="size-4" />
+          <button title="Editar categoria" aria-label="Editar categoria" onClick={() => setEditando({ ...c })} className="grid size-9 place-items-center rounded-xl bg-white/70 text-brand">
+            <Pencil className="size-4" />
           </button>
           <button
             onClick={() =>
@@ -429,7 +414,7 @@ function Lojas() {
           <input
             className={campo}
             placeholder="Descrição curta"
-            value={editendo.descricao}
+            value={editando.descricao}
             onChange={(e) => setEditando({ ...editando, descricao: e.target.value })}
           />
           <input
@@ -559,8 +544,8 @@ function Lojas() {
           >
             <Power className="size-4" />
           </button>
-           <button title="Editar loja" aria-label="Editar loja" onClick={() => setEditando({ ...l, categorias: [...l.categorias], cupons: l.cupons.map((c) => ({ ...c })) })} className="grid size-[...]">
-             <Pencil className="size-4" />
+          <button title="Editar loja" aria-label="Editar loja" onClick={() => setEditando({ ...l, categorias: [...l.categorias], cupons: l.cupons.map((c) => ({ ...c })) })} className="grid size-9 place-items-center rounded-xl bg-white/70 text-brand">
+            <Pencil className="size-4" />
           </button>
           <button
             onClick={() => setData((d) => ({ ...d, lojas: d.lojas.filter((x) => x.id !== l.id) }))}
@@ -574,7 +559,465 @@ function Lojas() {
   );
 }
 
-// The rest of the file is intentionally preserved from the previous full implementation.
+function Redes() {
+  const { redes } = useHubData();
+  const [nome, setNome] = useState("");
+  const [iconId, setIconId] = useState<string>(SOCIAL_ICON_IDS[0]);
+  const [url, setUrl] = useState("");
+
+  function adicionar() {
+    if (!nome.trim()) return;
+    setData((d) => ({ ...d, redes: [...d.redes, { id: uid(), nome, iconId, url }] }));
+    setNome("");
+    setUrl("");
+  }
+
+  return (
+    <>
+      <div className="glass-panel space-y-2 rounded-2xl p-4">
+        <p className="font-display text-sm font-semibold">Nova rede social</p>
+        <input className={campo} placeholder="Nome" value={nome} onChange={(e) => setNome(e.target.value)} />
+        <select className={campo} value={iconId} onChange={(e) => setIconId(e.target.value)}>
+          {SOCIAL_ICON_IDS.map((i) => (
+            <option key={i} value={i}>
+              {i}
+            </option>
+          ))}
+        </select>
+        <input className={campo} placeholder="Link" value={url} onChange={(e) => setUrl(e.target.value)} />
+        <button onClick={adicionar} className={`${botao} w-full`}>
+          Adicionar
+        </button>
+      </div>
+
+      {redes.map((r) => (
+        <div key={r.id} className="glass-panel flex items-center gap-3 rounded-2xl p-3">
+          <span className="grid size-9 place-items-center rounded-xl bg-white/70 text-brand">
+            <SocialIcon iconId={r.iconId} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[14px] font-semibold">{r.nome}</p>
+            <p className="truncate text-[11px] text-ink/50">{r.url}</p>
+          </div>
+          <button
+            onClick={() => setData((d) => ({ ...d, redes: d.redes.filter((x) => x.id !== r.id) }))}
+            className="grid size-9 place-items-center rounded-xl bg-white/70 text-destructive"
+          >
+            <Trash2 className="size-4" />
+          </button>
+        </div>
+      ))}
+    </>
+  );
+}
+
+function Textos() {
+  const { textos } = useHubData();
+  const [termos, setTermos] = useState(textos.termos);
+  const [privacidade, setPrivacidade] = useState(textos.privacidade);
+  const [ok, setOk] = useState(false);
+
+  return (
+    <div className="glass-panel space-y-2 rounded-2xl p-4">
+      <p className="font-display text-sm font-semibold">Termos de uso</p>
+      <textarea className={campo} rows={6} value={termos} onChange={(e) => setTermos(e.target.value)} />
+      <p className="pt-2 font-display text-sm font-semibold">Política de privacidade</p>
+      <textarea className={campo} rows={6} value={privacidade} onChange={(e) => setPrivacidade(e.target.value)} />
+      <button
+        onClick={() => {
+          setData((d) => ({ ...d, textos: { termos, privacidade } }));
+          setOk(true);
+          setTimeout(() => setOk(false), 1800);
+        }}
+        className={`${botao} w-full`}
+      >
+        {ok ? "Salvo!" : "Salvar textos"}
+      </button>
+    </div>
+  );
+}
+
+function Perfil() {
+  const { perfil } = useHubData();
+  const [p, setP] = useState(perfil);
+  const [nomeAdmin, setNomeAdmin] = useState("");
+  const [fotoAdmin, setFotoAdmin] = useState("");
+  const [senhaAtual, setSenhaAtual] = useState("");
+  const [novaSenha, setNovaSenha] = useState("");
+  const [msg, setMsg] = useState("");
+
+  useEffect(() => {
+    void (async () => {
+      const { data: auth } = await supabase.auth.getUser();
+      if (!auth.user) return;
+      const { data } = await supabase.from("profiles").select("display_name, avatar_url").eq("id", auth.user.id).maybeSingle();
+      if (data) {
+        setNomeAdmin(data.display_name);
+        setFotoAdmin(data.avatar_url ?? "");
+      }
+    })();
+  }, []);
+
+  async function salvarPerfilAdmin() {
+    const { data: auth } = await supabase.auth.getUser();
+    if (!auth.user) return;
+    const { error } = await supabase.from("profiles").upsert({ id: auth.user.id, display_name: nomeAdmin, avatar_url: fotoAdmin || null });
+    setMsg(error ? "Não foi possível salvar o perfil." : "Perfil do administrador salvo.");
+  }
+
+  async function alterarSenha() {
+    if (!senhaAtual || novaSenha.length < 6) {
+      setMsg("Informe a senha atual e uma nova senha com ao menos 6 caracteres.");
+      return;
+    }
+    const { error } = await supabase.auth.updateUser({ password: novaSenha, current_password: senhaAtual });
+    setMsg(error ? "A senha atual está incorreta ou a nova senha não foi aceita." : "Senha alterada com sucesso.");
+    if (!error) {
+      setSenhaAtual("");
+      setNovaSenha("");
+    }
+  }
+
+  async function enviarFoto(file: File) {
+    if (!file.type.startsWith("image/")) {
+      setMsg("Escolha um arquivo de imagem (JPG ou PNG).");
+      return;
+    }
+    try {
+      const foto = await redimensionarImagem(file, 320);
+      setP((atual) => ({ ...atual, foto }));
+      setMsg("Foto carregada. Clique em “Salvar perfil” para publicar.");
+    } catch {
+      setMsg("Não foi possível ler essa imagem.");
+    }
+  }
+
+  return (
+    <>
+      <div className="glass-panel space-y-2 rounded-2xl p-4">
+        <p className="font-display text-sm font-semibold">Perfil do site</p>
+        <div className="flex items-center gap-3">
+          <img
+            src={p.foto || perfilPadrao}
+            alt="Foto do perfil"
+            className="size-16 shrink-0 rounded-2xl object-cover"
+          />
+          <div className="min-w-0 flex-1 space-y-1.5">
+            <label className={`${botaoSec} flex cursor-pointer items-center justify-center gap-1.5`}>
+              <Upload className="size-4" /> Enviar foto
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) void enviarFoto(f);
+                  e.target.value = "";
+                }}
+              />
+            </label>
+            {p.foto ? (
+              <button onClick={() => setP({ ...p, foto: "" })} className="text-[12px] font-semibold text-destructive">
+                Remover foto
+              </button>
+            ) : null}
+          </div>
+        </div>
+        <input className={campo} placeholder="Marca" value={p.marca} onChange={(e) => setP({ ...p, marca: e.target.value })} />
+        <input className={campo} placeholder="Slogan" value={p.slogan} onChange={(e) => setP({ ...p, slogan: e.target.value })} />
+        <input className={campo} placeholder="Nome" value={p.nome} onChange={(e) => setP({ ...p, nome: e.target.value })} />
+        <textarea
+          className={campo}
+          rows={3}
+          placeholder="Descrição"
+          value={p.descricao}
+          onChange={(e) => setP({ ...p, descricao: e.target.value })}
+        />
+        <button onClick={() => { setData((d) => ({ ...d, perfil: p })); setMsg("Perfil do site salvo."); }} className={`${botao} w-full`}>
+          Salvar perfil
+        </button>
+        {msg ? <p className="text-[12px] font-medium text-ink/60">{msg}</p> : null}
+      </div>
+
+      <div className="glass-panel space-y-2 rounded-2xl p-4">
+        <p className="font-display text-sm font-semibold">Perfil do administrador</p>
+        <input className={campo} placeholder="Nome de exibição" value={nomeAdmin} onChange={(e) => setNomeAdmin(e.target.value)} />
+        <input className={campo} placeholder="Link da foto (opcional)" value={fotoAdmin} onChange={(e) => setFotoAdmin(e.target.value)} />
+        <Button onClick={salvarPerfilAdmin} className={`${botao} h-auto w-full`}>Salvar perfil do administrador</Button>
+      </div>
+
+      <div className="glass-panel space-y-2 rounded-2xl p-4">
+        <p className="font-display text-sm font-semibold">Alterar senha</p>
+        <input
+          className={campo}
+          type="password"
+          placeholder="Senha atual"
+          value={senhaAtual}
+          onChange={(e) => setSenhaAtual(e.target.value)}
+        />
+        <input
+          className={campo}
+          type="password"
+          placeholder="Nova senha"
+          value={novaSenha}
+          onChange={(e) => setNovaSenha(e.target.value)}
+        />
+        <Button onClick={alterarSenha} className={`${botao} h-auto w-full`}>
+          Alterar senha
+        </Button>
+        {msg ? <p className="text-[12px] font-medium text-ink/60">{msg}</p> : null}
+      </div>
+    </>
+  );
+}
+
+async function redimensionarBanner(file: File, larguraMax: number): Promise<string> {
+  const bitmap = await createImageBitmap(file);
+  const escala = Math.min(1, larguraMax / bitmap.width);
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(bitmap.width * escala);
+  canvas.height = Math.round(bitmap.height * escala);
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("canvas indisponível");
+  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+  return canvas.toDataURL("image/jpeg", 0.85);
+}
+
+const ANUNCIO_NOVO = (): Anuncio => ({
+  id: uid(),
+  tag: "",
+  tipo: "imagem",
+  imagem: "",
+  link: "",
+  codigo: "",
+  ativo: true,
+  home: true,
+  peso: 1,
+  formato: "barra",
+  blog: false,
+  categorias: [],
+});
+
+function Anuncios() {
+  const data = useHubData();
+  const anuncios = data.anuncios ?? [];
+  const [edit, setEdit] = useState<Anuncio | null>(null);
+  const [msg, setMsg] = useState("");
+
+  function salvar(a: Anuncio) {
+    if (!a.tag.trim()) return;
+    setData((d) => {
+      const lista = d.anuncios ?? [];
+      const existe = lista.some((x) => x.id === a.id);
+      return { ...d, anuncios: existe ? lista.map((x) => (x.id === a.id ? a : x)) : [...lista, a] };
+    });
+    setEdit(null);
+    setMsg("Anúncio salvo.");
+  }
+
+  function remover(id: string) {
+    setData((d) => ({ ...d, anuncios: (d.anuncios ?? []).filter((x) => x.id !== id) }));
+  }
+
+  function alternar(id: string) {
+    setData((d) => ({
+      ...d,
+      anuncios: (d.anuncios ?? []).map((x) => (x.id === id ? { ...x, ativo: !x.ativo } : x)),
+    }));
+  }
+
+  return (
+    <>
+      {edit ? (
+        <div className="glass-panel space-y-3 rounded-2xl p-4">
+          <p className="font-display text-sm font-semibold">
+            {anuncios.some((x) => x.id === edit.id) ? "Editar anúncio" : "Novo anúncio"}
+          </p>
+          <input
+            className={campo}
+            placeholder="Identificação interna (ex.: Loja Silva · outubro)"
+            value={edit.tag}
+            onChange={(e) => setEdit({ ...edit, tag: e.target.value })}
+          />
+          <select
+            className={campo}
+            value={edit.tipo}
+            onChange={(e) => setEdit({ ...edit, tipo: e.target.value as Anuncio["tipo"] })}
+          >
+            <option value="imagem">Banner próprio (imagem + link)</option>
+            <option value="script">Código / script do anunciante</option>
+          </select>
+
+          {edit.tipo === "imagem" ? (
+            <>
+              {edit.imagem ? (
+                <img src={edit.imagem} alt="Prévia do banner" className="mx-auto block max-w-full rounded-xl" />
+              ) : null}
+              <label className={`${botaoSec} flex cursor-pointer items-center justify-center gap-2`}>
+                <Upload className="size-4" /> Enviar imagem
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    try {
+                      const url = await redimensionarBanner(file, 720);
+                      setEdit({ ...edit, imagem: url });
+                      setMsg("Imagem carregada.");
+                    } catch {
+                      setMsg("Não foi possível carregar a imagem.");
+                    }
+                  }}
+                />
+              </label>
+              <input
+                className={campo}
+                placeholder="Link de destino (https://…)"
+                value={edit.link ?? ""}
+                onChange={(e) => setEdit({ ...edit, link: e.target.value })}
+              />
+            </>
+          ) : (
+            <textarea
+              className={`${campo} min-h-32 font-mono text-[12px]`}
+              placeholder="Cole aqui o código/script do anunciante"
+              value={edit.codigo ?? ""}
+              onChange={(e) => setEdit({ ...edit, codigo: e.target.value })}
+            />
+          )}
+
+          <label className="flex items-center gap-2 text-[13px] text-ink/70">
+            <input type="checkbox" checked={edit.ativo} onChange={(e) => setEdit({ ...edit, ativo: e.target.checked })} />
+            Anúncio ativo
+          </label>
+          <label className="flex items-center gap-2 text-[13px] text-ink/70">
+            <input type="checkbox" checked={edit.home} onChange={(e) => setEdit({ ...edit, home: e.target.checked })} />
+            Exibir na página inicial
+          </label>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <label className="block">
+              <span className="mb-1 block text-[12px] font-semibold text-ink/60">Tamanho da arte</span>
+              <select
+                className={campo}
+                value={edit.formato ?? "barra"}
+                onChange={(e) => setEdit({ ...edit, formato: e.target.value as FormatoAnuncio })}
+              >
+                {(Object.keys(FORMATOS) as FormatoAnuncio[]).map((f) => (
+                  <option key={f} value={f}>
+                    {FORMATOS[f].label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-[12px] font-semibold text-ink/60">Chance no sorteio</span>
+              <select
+                className={campo}
+                value={String(edit.peso ?? (edit.destaque ? 2 : 1))}
+                onChange={(e) => {
+                  const p = Number(e.target.value) as PesoAnuncio;
+                  setEdit({ ...edit, peso: p, destaque: p > 1 });
+                }}
+              >
+                {([1, 2, 4] as PesoAnuncio[]).map((p) => (
+                  <option key={p} value={p}>
+                    {PESOS[p]}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <label className="flex items-center gap-2 text-[13px] text-ink/70">
+            <input
+              type="checkbox"
+              checked={!!edit.blog}
+              onChange={(e) => setEdit({ ...edit, blog: e.target.checked })}
+            />
+            Exibir no blog
+          </label>
+
+          <fieldset>
+            <legend className="mb-1.5 text-[12px] font-semibold text-ink/60">Categorias onde pode aparecer</legend>
+            <div className="grid grid-cols-2 gap-1.5">
+              {data.categorias.map((c) => (
+                <label key={c.id} className="flex items-center gap-2 text-[13px] text-ink/70">
+                  <input
+                    type="checkbox"
+                    checked={edit.categorias.includes(c.id)}
+                    onChange={(e) =>
+                      setEdit({
+                        ...edit,
+                        categorias: e.target.checked
+                          ? [...edit.categorias, c.id]
+                          : edit.categorias.filter((x) => x !== c.id),
+                      })
+                    }
+                  />
+                  {c.nome}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <div className="flex gap-2">
+            <button onClick={() => salvar(edit)} className={`${botao} flex-1`}>
+              Salvar
+            </button>
+            <button onClick={() => setEdit(null)} className={botaoSec}>
+              Cancelar
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button onClick={() => setEdit(ANUNCIO_NOVO())} className={`${botao} flex w-full items-center justify-center gap-2`}>
+          <Plus className="size-4" /> Novo anúncio
+        </button>
+      )}
+
+      {msg ? <p className="px-1 text-[12px] font-medium text-ink/60">{msg}</p> : null}
+
+      {anuncios.map((a) => (
+        <div key={a.id} className="glass-panel space-y-2 rounded-2xl p-3">
+          <div className="flex items-center gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[14px] font-semibold">{a.tag || "Sem identificação"}</p>
+              <p className="truncate text-[11px] text-ink/50">
+                {a.tipo === "imagem" ? "Banner próprio" : "Código do anunciante"} · {FORMATOS[a.formato ?? "barra"].label} · {PESOS[(a.peso ?? (a.destaque ? 2 : 1)) as PesoAnuncio]} · {a.ativo ? "ativo" : "pausado"} · {a.home ? "home" : "sem home"} · {a.blog ? "blog" : "sem blog"} · {a.categorias.length} categoria(s)
+              </p>
+            </div>
+            <button
+              onClick={() => alternar(a.id)}
+              title={a.ativo ? "Pausar" : "Ativar"}
+              aria-label={a.ativo ? "Pausar anúncio" : "Ativar anúncio"}
+              className="grid size-9 place-items-center rounded-xl bg-white/70 text-brand"
+            >
+              <Power className="size-4" />
+            </button>
+            <button
+              onClick={() => setEdit(a)}
+              title="Editar"
+              aria-label="Editar anúncio"
+              className="grid size-9 place-items-center rounded-xl bg-white/70 text-brand"
+            >
+              <Pencil className="size-4" />
+            </button>
+            <button
+              onClick={() => remover(a.id)}
+              title="Excluir"
+              aria-label="Excluir anúncio"
+              className="grid size-9 place-items-center rounded-xl bg-white/70 text-destructive"
+            >
+              <Trash2 className="size-4" />
+            </button>
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
 
 const ARTIGO_NOVO = (): Artigo => ({
   id: uid(),
@@ -593,9 +1036,19 @@ const ARTIGO_NOVO = (): Artigo => ({
   criadoEm: new Date().toISOString(),
 });
 
-function novoBloco(tipo: Bloco["tipo"], atual?: Bloco): Bloco {
+function novoBloco(tipo: Bloco["tipo"], atual?: Bloco, categorias: Categoria[] = []): Bloco {
   const id = atual?.id ?? uid();
   if (tipo === "anuncio") return { id, tipo: "anuncio", anuncios: [] };
+  if (tipo === "link") {
+    return {
+      id,
+      tipo: "link",
+      texto: "Ver ofertas",
+      destino: "categoria",
+      categoriaSlug: categorias[0]?.slug || "",
+      url: "",
+    };
+  }
   return { id, tipo, texto: atual && "texto" in atual ? atual.texto : "" };
 }
 
@@ -607,7 +1060,6 @@ function Blog() {
   const disponiveis = (data.anuncios ?? []).filter((a) => a.ativo);
   const [edit, setEdit] = useState<Artigo | null>(null);
   const [resumoVini, setResumoVini] = useState("");
-  const [vozNarracao, setVozNarracao] = useState("Kore");
   const [msg, setMsg] = useState("");
   const [ocupado, setOcupado] = useState<"" | "resumo" | "roteiro" | "audio">("");
 
@@ -733,7 +1185,7 @@ function Blog() {
     setOcupado("audio");
     setMsg("");
     try {
-      await gerarNarracao({ data: { artigoId: edit.id, texto: edit.textoNarracao, voz: vozNarracao } });
+      await gerarNarracao({ data: { artigoId: edit.id, texto: edit.textoNarracao } });
       setEdit({ ...edit, temAudio: true });
       marcar(edit.id, "temAudio", true);
       setMsg("Áudio pronto e guardado.");
@@ -825,37 +1277,23 @@ function Blog() {
                   onChange={(e) =>
                     setEdit({
                       ...edit,
-                      blocos: edit.blocos.map((x) => (x.id === b.id ? novoBloco(e.target.value as Bloco["tipo"], x) : x)),
+                      blocos: edit.blocos.map((x) => (x.id === b.id ? novoBloco(e.target.value as Bloco["tipo"], x, data.categorias) : x)),
                     })
                   }
                 >
                   <option value="texto">Parágrafo</option>
                   <option value="titulo">Título</option>
                   <option value="anuncio">Bloco de anúncio</option>
+                  <option value="link">Botão / Atalho</option>
                 </select>
                 <span className="ml-auto flex gap-1">
-                  <button
-                    type="button"
-                    onClick={() => mexerBloco(i, -1)}
-                    aria-label="Subir bloco"
-                    className="grid size-7 place-items-center rounded-lg bg-white/70 text-ink/60"
-                  >
+                  <button type="button" onClick={() => mexerBloco(i, -1)} aria-label="Subir bloco" className="grid size-7 place-items-center rounded-lg bg-white/70 text-ink/60">
                     <ArrowUp className="size-3.5" />
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => mexerBloco(i, 1)}
-                    aria-label="Descer bloco"
-                    className="grid size-7 place-items-center rounded-lg bg-white/70 text-ink/60"
-                  >
+                  <button type="button" onClick={() => mexerBloco(i, 1)} aria-label="Descer bloco" className="grid size-7 place-items-center rounded-lg bg-white/70 text-ink/60">
                     <ArrowDown className="size-3.5" />
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setEdit({ ...edit, blocos: edit.blocos.filter((x) => x.id !== b.id) })}
-                    aria-label="Excluir bloco"
-                    className="grid size-7 place-items-center rounded-lg bg-white/70 text-destructive"
-                  >
+                  <button type="button" onClick={() => setEdit({ ...edit, blocos: edit.blocos.filter((x) => x.id !== b.id) })} aria-label="Excluir bloco" className="grid size-7 place-items-center rounded-lg bg-white/70 text-destructive">
                     <Trash2 className="size-3.5" />
                   </button>
                 </span>
@@ -911,6 +1349,93 @@ function Blog() {
                     })
                   }
                 />
+              ) : b.tipo === "link" ? (
+                <div className="space-y-2 rounded-xl border border-glass-border bg-background/40 p-2">
+                  <label className="flex items-center gap-2 text-[12px] font-semibold text-ink/60">
+                    <span>Destino</span>
+                    <select
+                      className={campo}
+                      value={b.destino ?? "categoria"}
+                      onChange={(e) =>
+                        setEdit({
+                          ...edit,
+                          blocos: edit.blocos.map((x) =>
+                            x.id === b.id && x.tipo === "link"
+                              ? {
+                                  ...x,
+                                  destino: e.target.value as "categoria" | "direto",
+                                  categoriaSlug:
+                                    e.target.value === "categoria"
+                                      ? x.categoriaSlug || data.categorias[0]?.slug || ""
+                                      : x.categoriaSlug,
+                                }
+                              : x,
+                          ),
+                        })
+                      }
+                    >
+                      <option value="categoria">Categoria do Hub</option>
+                      <option value="direto">Link direto</option>
+                    </select>
+                  </label>
+
+                  {b.destino === "categoria" ? (
+                    <label className="flex flex-col gap-1 text-[12px] text-ink/60">
+                      <span>Categoria</span>
+                      <select
+                        className={campo}
+                        value={b.categoriaSlug || data.categorias[0]?.slug || ""}
+                        onChange={(e) =>
+                          setEdit({
+                            ...edit,
+                            blocos: edit.blocos.map((x) =>
+                              x.id === b.id && x.tipo === "link" ? { ...x, categoriaSlug: e.target.value } : x,
+                            ),
+                          })
+                        }
+                      >
+                        {data.categorias.map((c) => (
+                          <option key={c.id} value={c.slug}>
+                            {c.nome}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  ) : (
+                    <label className="flex flex-col gap-1 text-[12px] text-ink/60">
+                      <span>URL externa</span>
+                      <input
+                        className={campo}
+                        placeholder="https://exemplo.com"
+                        value={b.url || ""}
+                        onChange={(e) =>
+                          setEdit({
+                            ...edit,
+                            blocos: edit.blocos.map((x) =>
+                              x.id === b.id && x.tipo === "link" ? { ...x, url: e.target.value } : x,
+                            ),
+                          })
+                        }
+                      />
+                    </label>
+                  )}
+
+                  <label className="flex flex-col gap-1 text-[12px] text-ink/60">
+                    <span>Texto do botão</span>
+                    <input
+                      className={campo}
+                      value={b.texto}
+                      onChange={(e) =>
+                        setEdit({
+                          ...edit,
+                          blocos: edit.blocos.map((x) =>
+                            x.id === b.id && x.tipo === "link" ? { ...x, texto: e.target.value } : x,
+                          ),
+                        })
+                      }
+                    />
+                  </label>
+                </div>
               ) : (
                 <textarea
                   className={`${campo} min-h-24`}
@@ -927,26 +1452,17 @@ function Blog() {
             </div>
           ))}
           <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => setEdit({ ...edit, blocos: [...edit.blocos, novoBloco("texto")] })}
-              className={botaoSec}
-            >
+            <button type="button" onClick={() => setEdit({ ...edit, blocos: [...edit.blocos, novoBloco("texto")] })} className={botaoSec}>
               + Parágrafo
             </button>
-            <button
-              type="button"
-              onClick={() => setEdit({ ...edit, blocos: [...edit.blocos, novoBloco("titulo")] })}
-              className={botaoSec}
-            >
+            <button type="button" onClick={() => setEdit({ ...edit, blocos: [...edit.blocos, novoBloco("titulo")] })} className={botaoSec}>
               + Título
             </button>
-            <button
-              type="button"
-              onClick={() => setEdit({ ...edit, blocos: [...edit.blocos, novoBloco("anuncio")] })}
-              className={botaoSec}
-            >
+            <button type="button" onClick={() => setEdit({ ...edit, blocos: [...edit.blocos, novoBloco("anuncio")] })} className={botaoSec}>
               + Bloco de anúncio
+            </button>
+            <button type="button" onClick={() => setEdit({ ...edit, blocos: [...edit.blocos, novoBloco("link", undefined, data.categorias)] })} className={botaoSec}>
+              + Botão / Atalho
             </button>
           </div>
         </div>
@@ -980,24 +1496,6 @@ function Blog() {
           <p className="mt-1 text-[11px] text-ink/45">
             {edit.textoNarracao.length} caracteres — o áudio leva alguns segundos para ser pronto.
           </p>
-          <div className="mb-2 flex items-center gap-3">
-            <label htmlFor="voz-narracao" className="text-sm font-medium">Voz:</label>
-            <select
-              id="voz-narracao"
-              value={vozNarracao}
-              onChange={(e) => setVozNarracao(e.target.value)}
-              className={campo}
-            >
-              <option value="Kore">Kore (Feminina · Calma e acolhedora)</option>
-              <option value="Puck">Puck (Masculina · Jovem e amigável)</option>
-              <option value="Fenrir">Fenrir (Masculina · Encorpada e firme)</option>
-              <option value="Charon">Charon (Masculina · Madura e sóbria)</option>
-              <option value="Aoede">Aoede (Feminina · Suave)</option>
-              <option value="Leda">Leda (Feminina · Expressiva)</option>
-              <option value="Zephyr">Zephyr (Feminina · Dinâmica)</option>
-              <option value="Orus">Orus (Masculina · Firme e clara)</option>
-            </select>
-          </div>
           <div className="mt-2 flex flex-wrap gap-2">
             <button type="button" onClick={fazerRoteiro} disabled={!!ocupado} className={botao}>
               {ocupado === "roteiro" ? "Vini está escrevendo…" : "✨ Criar roteiro com o Vini"}
@@ -1099,4 +1597,3 @@ function Blog() {
   );
 }
 
-export {};
