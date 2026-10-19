@@ -1,19 +1,35 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowDown, ArrowUp, FolderCog, Globe2, Lock, LogOut, Megaphone, MessageCircle, Pencil, Plus, Power, ScrollText, Store, Trash2, Upload, UserRound } from "lucide-react";
+import { ArrowDown, ArrowUp, FolderCog, Globe2, Lock, LogOut, Megaphone, MessageCircle, Newspaper, Pencil, Plus, Power, ScrollText, Store, Trash2, Upload, UserRound } from "lucide-react";
 import perfilPadrao from "@/assets/perfil.jpg";
 import {
   setData,
   slugify,
   uid,
   useHubData,
+  FORMATOS,
+  PESOS,
+  textoDoArtigo,
+  tempoDeLeitura,
   type Anuncio,
+  type Artigo,
+  type Bloco,
   type Categoria,
+  type FormatoAnuncio,
   type Loja,
+  type PesoAnuncio,
 } from "@/lib/hub-data";
 import { ICON_LIBRARY, SOCIAL_ICON_IDS } from "@/lib/icon-library";
 import { Icon3D, SocialIcon } from "@/components/Icon3D";
 import { ViniAssistant } from "@/components/ViniAssistant";
+import { buscarExtras } from "@/lib/extras";
+import {
+  gerarNarracao,
+  gerarRoteiro,
+  removerNarracao,
+  resumirComVini,
+  salvarResumo,
+} from "@/lib/blog.functions";
 import { PageShell } from "@/components/SiteChrome";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -133,6 +149,7 @@ function Admin() {
     ["lojas", "Lojas", Store],
     ["redes", "Redes sociais", Globe2],
     ["publicidade", "Publicidade", Megaphone],
+    ["blog", "Blog", Newspaper],
     ["textos", "Textos legais", ScrollText],
     ["perfil", "Perfil e acesso", UserRound],
     ["vini", "Vini", MessageCircle],
@@ -175,6 +192,7 @@ function Admin() {
           {aba === "lojas" && <Lojas />}
           {aba === "redes" && <Redes />}
           {aba === "publicidade" && <Anuncios />}
+          {aba === "blog" && <Blog />}
           {aba === "textos" && <Textos />}
           {aba === "perfil" && <Perfil />}
           {aba === "vini" && <ViniAssistant />}
@@ -779,6 +797,9 @@ const ANUNCIO_NOVO = (): Anuncio => ({
   codigo: "",
   ativo: true,
   home: true,
+  peso: 1,
+  formato: "barra",
+  blog: false,
   categorias: [],
 });
 
