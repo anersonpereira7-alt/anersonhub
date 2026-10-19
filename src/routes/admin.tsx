@@ -53,6 +53,16 @@ const botao =
   "rounded-xl bg-gradient-to-r from-brand to-violet px-3 py-2.5 text-[13px] font-semibold text-primary-foreground transition active:scale-95";
 const botaoSec =
   "rounded-xl border border-brand/30 bg-white/70 px-3 py-2.5 text-[13px] font-semibold text-brand transition active:scale-95";
+const VOZES_NARRACAO = [
+  ["Kore", "Kore — Feminina · calma e acolhedora"],
+  ["Puck", "Puck — Masculina · jovem e amigável"],
+  ["Fenrir", "Fenrir — Masculina · firme e encorpada"],
+  ["Charon", "Charon — Masculina · madura e sóbria"],
+  ["Aoede", "Aoede — Feminina · suave"],
+  ["Leda", "Leda — Feminina · expressiva"],
+  ["Zephyr", "Zephyr — Feminina · dinâmica"],
+  ["Orus", "Orus — Masculina · clara e firme"],
+] as const;
 
 async function redimensionarImagem(file: File, lado: number): Promise<string> {
   const bitmap = await createImageBitmap(file);
@@ -1060,6 +1070,7 @@ function Blog() {
   const disponiveis = (data.anuncios ?? []).filter((a) => a.ativo);
   const [edit, setEdit] = useState<Artigo | null>(null);
   const [resumoVini, setResumoVini] = useState("");
+  const [vozNarracao, setVozNarracao] = useState("Kore");
   const [msg, setMsg] = useState("");
   const [ocupado, setOcupado] = useState<"" | "resumo" | "roteiro" | "audio">("");
 
@@ -1185,7 +1196,13 @@ function Blog() {
     setOcupado("audio");
     setMsg("");
     try {
-      await gerarNarracao({ data: { artigoId: edit.id, texto: edit.textoNarracao } });
+      await gerarNarracao({
+        data: {
+          artigoId: edit.id,
+          texto: edit.textoNarracao,
+          voz: vozNarracao,
+        },
+      });
       setEdit({ ...edit, temAudio: true });
       marcar(edit.id, "temAudio", true);
       setMsg("Áudio pronto e guardado.");
@@ -1521,23 +1538,40 @@ function Blog() {
           <p className="mt-1 text-[11px] text-ink/45">
             {edit.textoNarracao.length} caracteres — o áudio leva alguns segundos para ser pronto.
           </p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            <button type="button" onClick={fazerRoteiro} disabled={!!ocupado} className={botao}>
-              {ocupado === "roteiro" ? "Vini está escrevendo…" : "✨ Criar roteiro com o Vini"}
-            </button>
-            <button
-              type="button"
-              onClick={gerarAudio}
-              disabled={!!ocupado || !edit.textoNarracao.trim()}
-              className={botaoSec}
-            >
-              {ocupado === "audio" ? "Gerando áudio…" : "🎙️ Gerar áudio"}
-            </button>
-            {edit.temAudio && (
-              <button type="button" onClick={tirarAudio} disabled={!!ocupado} className={botaoSec}>
-                Remover áudio
+          <div className="mt-2 space-y-2">
+            <label className="flex flex-col gap-1 text-[12px] font-semibold text-ink/60">
+              <span>Voz do Vini</span>
+              <select
+                className={campo}
+                value={vozNarracao}
+                onChange={(e) => setVozNarracao(e.target.value)}
+              >
+                {VOZES_NARRACAO.map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <p className="text-[11px] text-ink/45">A voz escolhida será usada quando você gerar ou gerar novamente o áudio.</p>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" onClick={fazerRoteiro} disabled={!!ocupado} className={botao}>
+                {ocupado === "roteiro" ? "Vini está escrevendo…" : "✨ Criar roteiro com o Vini"}
               </button>
-            )}
+              <button
+                type="button"
+                onClick={gerarAudio}
+                disabled={!!ocupado || !edit.textoNarracao.trim()}
+                className={botaoSec}
+              >
+                {ocupado === "audio" ? "Gerando áudio…" : "🎙️ Gerar áudio"}
+              </button>
+              {edit.temAudio && (
+                <button type="button" onClick={tirarAudio} disabled={!!ocupado} className={botaoSec}>
+                  Remover áudio
+                </button>
+              )}
+            </div>
           </div>
         </fieldset>
 
@@ -1621,4 +1655,3 @@ function Blog() {
     </>
   );
 }
-
