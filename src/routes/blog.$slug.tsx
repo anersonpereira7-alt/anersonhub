@@ -6,7 +6,6 @@ import {
   artigoPorSlug,
   textoDoArtigo,
   tempoDeLeitura,
-  type Artigo,
   type HubData,
 } from "@/lib/hub-data";
 import { PageShell, SiteFooter } from "@/components/SiteChrome";
@@ -156,5 +155,3 @@ function ArtigoPagina() {
     </PageShell>
   );
 }
-
-export type { Artigo };
