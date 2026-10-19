@@ -211,7 +211,7 @@ function IconPicker({ value, onChange }: { value: string; onChange: (v: string) 
       <legend className="mb-2 text-[12px] font-semibold text-ink/60">Escolha o ícone</legend>
       <div className="grid max-h-72 grid-cols-4 gap-2 overflow-y-auto rounded-xl border border-glass-border bg-background/40 p-2 sm:grid-cols-6">
         {ICON_LIBRARY.map((i) => (
-          <button key={i.id} type="button" title={i.label} aria-label={i.label} aria-pressed={value === i.id} onClick={() => onChange(i.id)} className={value === i.id ? "flex min-w-0 flex-col items-center gap-1 rounded-lg border border-brand bg-brand/8 p-2 text-center" : "flex min-w-0 flex-col items-center gap-1 rounded-lg border border-transparent p-2 text-center"}>
+          <button key={i.id} type="button" title={i.label} aria-label={i.label} aria-pressed={value === i.id} onClick={() => onChange(i.id)} className={value === i.id ? "flex min-w-0 flex-col items-center gap-1 rounded-xl border border-brand/40 bg-brand/10 p-2 text-brand" : "flex min-w-0 flex-col items-center gap-1 rounded-xl border border-glass-border bg-white/70 p-2 text-ink/65"}>
             <Icon3D iconId={i.id} className="size-10" />
             <span className="w-full truncate text-[10px] font-medium text-ink/70">{i.label}</span>
           </button>
@@ -985,7 +985,7 @@ function Anuncios() {
             <div className="min-w-0 flex-1">
               <p className="truncate text-[14px] font-semibold">{a.tag || "Sem identificação"}</p>
               <p className="truncate text-[11px] text-ink/50">
-                {a.tipo === "imagem" ? "Banner próprio" : "Código do anunciante"} · {FORMATOS[a.formato ?? "barra"].label} · {PESOS[(a.peso ?? (a.destaque ? 2 : 1)) as PesoAnuncio]} · {a.ativo ? "ativo" : "pausado"} · {a.home ? "home" : "sem home"} · {a.blog ? "blog" : "sem blog"} · {a.categorias.length} categoria(s)
+                {a.tipo === "imagem" ? "Banner próprio" : "Código do anunciante"} · {FORMATOS[a.formato ?? "barra"].label} · {PESOS[(a.peso ?? (a.destaque ? 2 : 1)) as PesoAnuncio]} · {a.ativo ? "ativo" : "inativo"}
               </p>
             </div>
             <button
@@ -1038,7 +1038,7 @@ const ARTIGO_NOVO = (): Artigo => ({
 
 function novoBloco(tipo: Bloco["tipo"], atual?: Bloco, categorias: Categoria[] = []): Bloco {
   const id = atual?.id ?? uid();
-  if (tipo === "anuncio") return { id, tipo: "anuncio", anuncios: [] };
+  if (tipo === "anuncio") return { id, tipo: "anuncio", anuncios: [], formato: "barra" };
   if (tipo === "link") {
     return {
       id,
@@ -1300,43 +1300,68 @@ function Blog() {
               </div>
 
               {b.tipo === "anuncio" ? (
-                <fieldset>
-                  <legend className="mb-1 text-[11px] font-semibold text-ink/60">
-                    Anúncios que podem aparecer aqui
-                  </legend>
-                  {disponiveis.length === 0 ? (
-                    <p className="text-[11px] text-ink/45">Nenhum anúncio ativo na central de publicidade.</p>
-                  ) : (
-                    <div className="grid grid-cols-2 gap-1">
-                      {disponiveis.map((a) => (
-                        <label key={a.id} className="flex items-center gap-1.5 text-[12px] text-ink/70">
-                          <input
-                            type="checkbox"
-                            checked={b.anuncios.includes(a.id)}
-                            onChange={(e) =>
-                              setEdit({
-                                ...edit,
-                                blocos: edit.blocos.map((x) =>
-                                  x.id === b.id
-                                    ? {
-                                        ...x,
-                                        anuncios: e.target.checked
-                                          ? [...(x.tipo === "anuncio" ? x.anuncios : []), a.id]
-                                          : x.tipo === "anuncio"
-                                            ? x.anuncios.filter((y) => y !== a.id)
-                                            : [],
-                                      }
-                                    : x,
-                                ),
-                              })
-                            }
-                          />
-                          <span className="truncate">{a.tag || "sem nome"}</span>
-                        </label>
+                <div className="space-y-2">
+                  <label className="block">
+                    <span className="mb-1 block text-[11px] font-semibold text-ink/60">Formato do espaço</span>
+                    <select
+                      className={campo}
+                      value={b.formato ?? "barra"}
+                      onChange={(e) =>
+                        setEdit({
+                          ...edit,
+                          blocos: edit.blocos.map((x) =>
+                            x.id === b.id && x.tipo === "anuncio"
+                              ? { ...x, formato: e.target.value as FormatoAnuncio }
+                              : x,
+                          ),
+                        })
+                      }
+                    >
+                      {(Object.keys(FORMATOS) as FormatoAnuncio[]).map((f) => (
+                        <option key={f} value={f}>
+                          {FORMATOS[f].label}
+                        </option>
                       ))}
-                    </div>
-                  )}
-                </fieldset>
+                    </select>
+                  </label>
+                  <fieldset>
+                    <legend className="mb-1 text-[11px] font-semibold text-ink/60">
+                      Anúncios que podem aparecer aqui
+                    </legend>
+                    {disponiveis.length === 0 ? (
+                      <p className="text-[11px] text-ink/45">Nenhum anúncio ativo na central de publicidade.</p>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-1">
+                        {disponiveis.map((a) => (
+                          <label key={a.id} className="flex items-center gap-1.5 text-[12px] text-ink/70">
+                            <input
+                              type="checkbox"
+                              checked={b.anuncios.includes(a.id)}
+                              onChange={(e) =>
+                                setEdit({
+                                  ...edit,
+                                  blocos: edit.blocos.map((x) =>
+                                    x.id === b.id
+                                      ? {
+                                          ...x,
+                                          anuncios: e.target.checked
+                                            ? [...(x.tipo === "anuncio" ? x.anuncios : []), a.id]
+                                            : x.tipo === "anuncio"
+                                              ? x.anuncios.filter((y) => y !== a.id)
+                                              : [],
+                                        }
+                                      : x,
+                                  ),
+                                })
+                              }
+                            />
+                            <span className="truncate">{a.tag || "sem nome"}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </fieldset>
+                </div>
               ) : b.tipo === "titulo" ? (
                 <input
                   className={campo}

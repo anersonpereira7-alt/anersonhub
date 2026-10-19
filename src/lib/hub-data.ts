@@ -254,9 +254,9 @@ export const DEFAULT_DATA: HubData = {
   artigos: [],
   textos: {
     termos:
-      "Este site reúne links de afiliado e cupons de lojas parceiras. Ao clicar em um link você é redirecionado ao site da loja, onde valem os termos e condições dela. Podemos receber comissão por compras realizadas através de nossos links.",
+      "Este site reúne links de afiliado e cupons de lojas parceiras. Ao clicar em um link você é redirecionado ao site da loja, onde valem os termos e condições dela. Podemos receber comissão por compras realizadas através de nossos links. Consulte a loja antes de concluir a compra.",
     privacidade:
-      "Não coletamos dados pessoais sensíveis. Podemos usar métricas anônimas de navegação para melhorar o site. Ao acessar lojas parceiras, seus dados passam a ser tratados conforme a política da loja em questão.",
+      "Não coletamos dados pessoais sensíveis. Podemos usar métricas anônimas de navegação para melhorar o site. Ao acessar lojas parceiras, seus dados passam a ser tratados conforme a política da respectiva loja.",
   },
 };
 
@@ -409,3 +409,4 @@ export function artigoPorSlug(d: HubData, slug: string) {
 export function artigosAtivos(d: HubData) {
   return (d.artigos ?? []).filter((a) => a.ativo);
 }
+

@@ -142,7 +142,7 @@ function ArtigoPagina() {
             if (b.tipo === "texto") return <p key={b.id}>{b.texto}</p>;
             if (b.tipo === "link") {
               const buttonClass =
-                "mt-3 inline-flex w-full items-center justify-between gap-3 rounded-2xl border border-brand/30 bg-gradient-to-r from-brand/10 via-violet/10 to-brand/5 px-4 py-3 text-left text-[15px] font-semibold text-ink shadow-sm transition hover:opacity-95";
+                "mt-3 inline-flex w-full items-center justify-between gap-3 rounded-2xl border border-brand/30 bg-gradient-to-r from-brand/10 via-violet/10 to-brand/5 px-4 py-3 text-left text-[15px] font-semibold text-ink";
 
               if (b.destino === "categoria") {
                 return (
@@ -176,7 +176,7 @@ function ArtigoPagina() {
               );
             }
 
-            return <AdBanner key={b.id} local="bloco" formato="retangulo" apenasIds={b.anuncios} slot={0} />;
+            return <AdBanner key={b.id} local="bloco" formato={b.formato ?? "barra"} apenasIds={b.anuncios} slot={0} />;
           })}
         </div>
 
