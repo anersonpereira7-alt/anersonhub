@@ -17,7 +17,11 @@ import { BarraAcessibilidade } from "@/components/ArticleTools";
 const CHAVE_ESCALA = "leitura-escala";
 
 export const Route = createFileRoute("/blog/$slug")({
-  head: ({ loaderData }: { loaderData?: { titulo: string; resumo: string; slug: string } }) => {
+  head: ({
+    loaderData,
+  }: {
+    loaderData?: { titulo: string; resumo: string; slug: string } | undefined;
+  }) => {
     if (!loaderData?.titulo) {
       return {
         meta: [
@@ -78,10 +82,19 @@ function ler(inicial?: string | null): HubData {
 
 function ArtigoPagina() {
   const dados = useLoaderData({ strict: false }) as
-    | { inicial?: string | null; id: string; titulo: string; resumo: string; temResumo: boolean; temAudio: boolean; minutos: number }
+    | {
+        inicial?: string | null;
+        id: string;
+        slug: string;
+        titulo: string;
+        resumo: string;
+        temResumo: boolean;
+        temAudio: boolean;
+        minutos: number;
+      }
     | undefined;
   const data = useHubData(dados?.inicial);
-  const artigo = data.artigos?.find((a) => a.id === dados?.id) ?? (dados ? artigoPorSlug(data, dados.slug ?? "") : undefined);
+  const artigo = data.artigos?.find((a) => a.id === dados?.id);
   const [escala, setEscala] = useState(1);
 
   useEffect(() => {
