@@ -35,7 +35,7 @@ function docDe(a: Anuncio) {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>html,body{margin:0;padding:0;overflow:hidden;background:transparent}</style>
 </head><body>${body}</body></html>`;
-  return `data:text/html;charset=utf-8,${encodeURIComponent(html)}`;
+  return html;
 }
 
 export function AnuncioView({
