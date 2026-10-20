@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useLoaderData } from "@tanstack/react-router";
+import { useState } from "react";
 import { getHubContent } from "@/lib/hub.functions";
-import { useHubData, artigosAtivos, type Artigo } from "@/lib/hub-data";
+import { useHubData, artigosAtivos, CATEGORIAS_BLOG, type Artigo } from "@/lib/hub-data";
 import { PageShell, SiteFooter } from "@/components/SiteChrome";
 import { AdBanner } from "@/components/AdBanner";
 
@@ -39,10 +40,15 @@ function dataFmt(iso: string) {
 function Blog() {
   const inicial = useLoaderData({ strict: false }) as string | null | undefined;
   const data = useHubData(inicial);
+  const [catAtiva, setCatAtiva] = useState<string>("Todas");
   const artigos = artigosAtivos(data).sort((a, b) => {
     if (!!b.destaque !== !!a.destaque) return b.destaque ? 1 : -1;
     return (b.criadoEm || "").localeCompare(a.criadoEm || "");
   });
+  const artigosFiltrados =
+    catAtiva === "Todas"
+      ? artigos
+      : artigos.filter((a) => (a.categorias ?? []).includes(catAtiva));
 
   return (
     <PageShell>
@@ -56,13 +62,38 @@ function Blog() {
         </p>
       </header>
 
-      {artigos.length === 0 ? (
+      <div className="mt-4 overflow-x-auto pb-1">
+        <div className="flex min-w-max gap-2">
+          {[
+            "Todas",
+            ...CATEGORIAS_BLOG,
+          ].map((categoria) => {
+            const ativa = categoria === catAtiva;
+            return (
+              <button
+                key={categoria}
+                type="button"
+                onClick={() => setCatAtiva(categoria)}
+                className={
+                  ativa
+                    ? "rounded-full bg-brand px-3 py-1 text-[11px] font-semibold text-primary-foreground"
+                    : "rounded-full border border-glass-border bg-white/70 px-3 py-1 text-[11px] font-medium text-ink/60"
+                }
+              >
+                {categoria}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {artigosFiltrados.length === 0 ? (
         <p className="glass-panel mt-4 rounded-2xl p-6 text-center text-[13px] text-ink/60">
-          Ainda não tem artigo aqui. Volte em breve.
+          Ainda não tem artigo aqui para esta categoria. Volte em breve.
         </p>
       ) : (
         <div className="mt-4 space-y-3">
-          {artigos.map((a, i) => (
+          {artigosFiltrados.map((a, i) => (
             <div key={a.id}>
               <CardArtigo artigo={a} />
               {i === 2 && <AdBanner local="blog" slot={0} />}
@@ -78,6 +109,8 @@ function Blog() {
 }
 
 function CardArtigo({ artigo }: { artigo: Artigo }) {
+  const categorias = (artigo.categorias?.length ? artigo.categorias : ["Geral"]).slice(0, 3);
+
   return (
     <Link
       to="/blog/$slug"
@@ -108,6 +141,16 @@ function CardArtigo({ artigo }: { artigo: Artigo }) {
             </span>
           )}
         </div>
+        <div className="mt-1 flex flex-wrap gap-1">
+          {categorias.map((categoria) => (
+            <span
+              key={`${artigo.id}-${categoria}`}
+              className="rounded-full border border-brand/20 bg-white/60 px-1.5 py-0.5 text-[9px] font-medium text-ink/55"
+            >
+              {categoria}
+            </span>
+          ))}
+        </div>
         <h2 className="mt-1 font-display text-[15px] font-bold leading-snug">{artigo.titulo}</h2>
         <p className="mt-0.5 line-clamp-2 text-[12px] leading-snug text-ink/60">{artigo.resumo}</p>
         <p className="mt-1 text-[11px] text-ink/40">{dataFmt(artigo.criadoEm)}</p>
@@ -115,3 +158,221 @@ function CardArtigo({ artigo }: { artigo: Artigo }) {
     </Link>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -11,6 +11,7 @@ import {
   PESOS,
   textoDoArtigo,
   tempoDeLeitura,
+  CATEGORIAS_BLOG,
   type Anuncio,
   type Artigo,
   type Bloco,
@@ -221,7 +222,7 @@ function IconPicker({ value, onChange }: { value: string; onChange: (v: string) 
       <legend className="mb-2 text-[12px] font-semibold text-ink/60">Escolha o ícone</legend>
       <div className="grid max-h-72 grid-cols-4 gap-2 overflow-y-auto rounded-xl border border-glass-border bg-background/40 p-2 sm:grid-cols-6">
         {ICON_LIBRARY.map((i) => (
-          <button key={i.id} type="button" title={i.label} aria-label={i.label} aria-pressed={value === i.id} onClick={() => onChange(i.id)} className={value === i.id ? "flex min-w-0 flex-col items-center gap-1 rounded-xl border border-brand/40 bg-brand/10 p-2 text-brand" : "flex min-w-0 flex-col items-center gap-1 rounded-xl border border-glass-border bg-white/70 p-2 text-ink/65"}>
+          <button key={i.id} type="button" title={i.label} aria-label={i.label} aria-pressed={value === i.id} onClick={() => onChange(i.id)} className={value === i.id ? "flex min-w-0 flex-col items-center gap-1 rounded-xl bg-brand/10 p-2 text-brand" : "flex min-w-0 flex-col items-center gap-1 rounded-xl border border-glass-border bg-white/50 p-2 text-ink/60"}>
             <Icon3D iconId={i.id} className="size-10" />
             <span className="w-full truncate text-[10px] font-medium text-ink/70">{i.label}</span>
           </button>
@@ -1038,7 +1039,7 @@ const ARTIGO_NOVO = (): Artigo => ({
   ativo: false,
   destaque: false,
   imagem: "",
-  categorias: [],
+  categorias: ["Geral"],
   blocos: [{ id: uid(), tipo: "texto", texto: "" }],
   textoNarracao: "",
   temAudio: false,
@@ -1103,6 +1104,7 @@ function Blog() {
       slug,
       resumo: a.resumo.trim() || textoDoArtigo(a).replace(/\s+/g, " ").slice(0, 150),
       tempoLeitura: tempoDeLeitura(textoDoArtigo(a)),
+      categorias: a.categorias.length ? a.categorias : ["Geral"],
     };
     setData((d) => {
       const l = d.artigos ?? [];
@@ -1247,6 +1249,37 @@ function Blog() {
           onChange={(e) => setEdit({ ...edit, resumo: e.target.value })}
         />
 
+        <div className="space-y-2">
+          <p className="text-[12px] font-semibold text-ink/60">Categorias do artigo</p>
+          <div className="flex flex-wrap gap-2">
+            {CATEGORIAS_BLOG.map((categoria) => {
+              const selecionada = edit.categorias.includes(categoria);
+              return (
+                <button
+                  key={categoria}
+                  type="button"
+                  onClick={() =>
+                    setEdit((atual) => {
+                      if (!atual) return atual;
+                      const proxima = atual.categorias.includes(categoria)
+                        ? atual.categorias.filter((c) => c !== categoria)
+                        : [...atual.categorias, categoria];
+                      return { ...atual, categorias: proxima.length ? proxima : ["Geral"] };
+                    })
+                  }
+                  className={
+                    selecionada
+                      ? "rounded-full bg-brand px-3 py-1.5 text-xs font-semibold text-primary-foreground"
+                      : "rounded-full border border-glass-border bg-white/60 px-3 py-1.5 text-xs font-medium text-ink/60"
+                  }
+                >
+                  {categoria}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {edit.imagem ? (
           <img src={edit.imagem} alt="Prévia da capa" className="mx-auto block max-w-full rounded-xl" />
         ) : null}
@@ -1310,7 +1343,7 @@ function Blog() {
                   <button type="button" onClick={() => mexerBloco(i, 1)} aria-label="Descer bloco" className="grid size-7 place-items-center rounded-lg bg-white/70 text-ink/60">
                     <ArrowDown className="size-3.5" />
                   </button>
-                  <button type="button" onClick={() => setEdit({ ...edit, blocos: edit.blocos.filter((x) => x.id !== b.id) })} aria-label="Excluir bloco" className="grid size-7 place-items-center rounded-lg bg-white/70 text-destructive">
+                  <button type="button" onClick={() => setEdit({ ...edit, blocos: edit.blocos.filter((x) => x.id !== b.id) })} aria-label="Excluir bloco" className="grid size-7 place-items-center rounded-lg bg-white/70 text-ink/60">
                     <Trash2 className="size-3.5" />
                   </button>
                 </span>
@@ -1655,3 +1688,270 @@ function Blog() {
     </>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
