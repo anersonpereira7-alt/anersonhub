@@ -266,9 +266,9 @@ export const DEFAULT_DATA: HubData = {
   artigos: [],
   textos: {
     termos:
-      "Este site reúne links de afiliado e cupons de lojas parceiras. Ao clicar em um link você é redirecionado ao site da loja, onde valem os termos e condições dela. Podemos receber comissão pelo tráfego gerado. Leia os termos da loja antes de comprar.",
+      "Este site reúne links de afiliado e cupons de lojas parceiras. Ao clicar em um link você é redirecionado ao site da loja, onde valem os termos e condições dela. Podemos receber comissão.",
     privacidade:
-      "Não coletamos dados pessoais sensíveis. Podemos usar métricas anônimas de navegação para melhorar o site. Ao acessar lojas parceiras, seus dados passam a ser tratados conforme a política da loja em questão.",
+      "Não coletamos dados pessoais sensíveis. Podemos usar métricas anônimas de navegação para melhorar o site. Ao acessar lojas parceiras, seus dados passam a ser tratados conforme a política da loja.",
   },
 };
 
@@ -405,56 +405,59 @@ export function calcularTetoArtigo(totalBlocos: number, peso: PesoAnuncio = 1): 
 }
 
 export function resolverAnunciosDoArtigo(
-  blocos: Bloco[],
+  blocos: Array<{ id: string; tipo: string; anuncios?: string[]; formato?: FormatoAnuncio }>,
   todosAnuncios: Anuncio[],
 ): Record<string, Anuncio | null> {
-  const blocosAnuncio = blocos.filter((b): b is Extract<Bloco, { tipo: "anuncio" }> => b.tipo === "anuncio");
+  const blocosAnuncio = blocos.filter((b) => b.tipo === "anuncio");
   const total = blocosAnuncio.length;
-  const resultado: Record<string, Anuncio | null> = {};
   const contagem: Record<string, number> = {};
-  let ultimoComercialId: string | null = null;
-  let ultimoSocialId: string | null = null;
+  let ultimoId: string | null = null;
+  const resultado: Record<string, Anuncio | null> = {};
 
-  const sociais = todosAnuncios.filter((a) => a.ativo && a.social);
+  const tetoMax = (peso: 1 | 2 | 4) => {
+    if (peso === 4) return Math.ceil(total * 0.5);
+    if (peso === 2) return Math.max(1, Math.floor(total * 0.3));
+    return Math.max(1, Math.floor(total * 0.2));
+  };
 
-  for (const b of blocosAnuncio) {
-    const formatoBloco = b.formato ?? "barra";
-    const permitidos = todosAnuncios.filter(
-      (a) => a.ativo && !a.social && (b.anuncios.length === 0 || b.anuncios.includes(a.id)),
+  for (const bloco of blocosAnuncio) {
+    const formato = bloco.formato ?? "barra";
+    const permitidosIds = bloco.anuncios || [];
+
+    const comerciais = todosAnuncios.filter(
+      (a) =>
+        a.ativo &&
+        !a.social &&
+        a.formato === formato &&
+        permitidosIds.includes(a.id),
     );
 
-    let elegiveis = permitidos.filter((a) => {
-      const peso = (a.peso ?? (a.destaque ? 2 : 1)) as PesoAnuncio;
-      const teto = calcularTetoArtigo(total, peso);
-      const qtd = contagem[a.id] ?? 0;
-      const naoConsecutivo = total === 1 || a.id !== ultimoComercialId;
-      return qtd < teto && naoConsecutivo;
+    const elegiveis = comerciais.filter((a) => {
+      const peso = (a.peso ?? 1) as PesoAnuncio;
+      const usados = contagem[a.id] || 0;
+      return usados < tetoMax(peso) && a.id !== ultimoId;
     });
 
     let escolhido: Anuncio | null = null;
     if (elegiveis.length > 0) {
       escolhido = sortearAnuncio(elegiveis);
-    }
-
-    if (!escolhido) {
-      const sociaisDoFormato = sociais.filter((s) => !s.formato || s.formato === formatoBloco);
-      const poolSocial = sociaisDoFormato.length > 0 ? sociaisDoFormato : sociais;
-      const sociaisElegiveis = poolSocial.filter((s) => poolSocial.length <= 1 || s.id !== ultimoSocialId);
-
-      if (sociaisElegiveis.length > 0) {
-        escolhido = sortearAnuncio(sociaisElegiveis);
-        if (escolhido) ultimoSocialId = escolhido.id;
-      } else if (permitidos.length > 0) {
-        escolhido = sortearAnuncio(permitidos);
+    } else {
+      const sociais = todosAnuncios.filter(
+        (a) => a.ativo && a.social && a.formato === formato && a.id !== ultimoId,
+      );
+      if (sociais.length > 0) {
+        escolhido = sortearAnuncio(sociais);
+      } else {
+        const fallbackSocial = todosAnuncios.filter((a) => a.ativo && a.social && a.formato === formato);
+        if (fallbackSocial.length > 0) escolhido = sortearAnuncio(fallbackSocial);
       }
     }
 
-    if (escolhido && !escolhido.social) {
-      contagem[escolhido.id] = (contagem[escolhido.id] ?? 0) + 1;
-      ultimoComercialId = escolhido.id;
+    if (escolhido) {
+      contagem[escolhido.id] = (contagem[escolhido.id] || 0) + 1;
+      ultimoId = escolhido.id;
     }
-
-    resultado[b.id] = escolhido;
+    resultado[bloco.id] = escolhido;
   }
 
   return resultado;
