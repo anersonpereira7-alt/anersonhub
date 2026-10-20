@@ -57,9 +57,12 @@ export function AnuncioView({
     display: "block" as const,
   };
 
+  const r = rotulo.toUpperCase();
+  const textoRótulo = r === "PUBLICIDADE" ? "text-ink/35" : "text-emerald-600/80 dark:text-emerald-400/80";
+
   return (
     <div className="my-5 flex flex-col items-center gap-1.5" style={{ width: "100%", maxWidth: medida.largura }} data-slot={slot}>
-      <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-ink/35">{rotulo}</span>
+      <span className={`text-[9px] font-semibold uppercase tracking-[0.18em] ${textoRótulo}`}>{r}</span>
       {anuncio.tipo === "script" ? (
         <iframe
           key={anuncio.id}
@@ -93,4 +96,3 @@ export function AnuncioView({
     </div>
   );
 }
-
