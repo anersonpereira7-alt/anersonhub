@@ -949,7 +949,15 @@ function Anuncios() {
             />
             Exibir no blog
           </label>
-
+          <label className="flex items-center gap-2 text-[13px] text-ink/70">
+            <input
+              type="checkbox"
+              checked={!!edit.social}
+              onChange={(e) => setEdit({ ...edit, social: e.target.checked })}
+            />
+            Campanha social (institucional, utilidade pública ou causa)
+          </label>
+         
           <fieldset>
             <legend className="mb-1.5 text-[12px] font-semibold text-ink/60">Categorias onde pode aparecer</legend>
             <div className="grid grid-cols-2 gap-1.5">
