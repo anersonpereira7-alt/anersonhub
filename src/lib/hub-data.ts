@@ -63,6 +63,7 @@ export type Anuncio = {
   home: boolean;
   blog?: boolean;
   categorias: string[];
+  social?: boolean;
 };
 
 /** Blocos que formam um artigo do blog. */
@@ -265,9 +266,9 @@ export const DEFAULT_DATA: HubData = {
   artigos: [],
   textos: {
     termos:
-      "Este site reúne links de afiliado e cupons de lojas parceiras. Ao clicar em um link você é redirecionado ao site da loja, onde valem os termos e condições dela. Podemos receber comissões por indicações.",
+      "Este site reúne links de afiliado e cupons de lojas parceiras. Ao clicar em um link você é redirecionado ao site da loja, onde valem os termos e condições dela. Podemos receber comissão pelo tráfego gerado. Leia os termos da loja antes de comprar.",
     privacidade:
-      "Não coletamos dados pessoais sensíveis. Podemos usar métricas anônimas de navegação para melhorar o site. Ao acessar lojas parceiras, seus dados passam a ser tratados conforme a política da loja correspondente.",
+      "Não coletamos dados pessoais sensíveis. Podemos usar métricas anônimas de navegação para melhorar o site. Ao acessar lojas parceiras, seus dados passam a ser tratados conforme a política da loja em questão.",
   },
 };
 
@@ -396,6 +397,69 @@ export function sortearAnuncio<T extends { peso?: PesoAnuncio; destaque?: boolea
   return lista[lista.length - 1] ?? null;
 }
 
+export function calcularTetoArtigo(totalBlocos: number, peso: PesoAnuncio = 1): number {
+  if (totalBlocos <= 1) return 1;
+  if (peso === 4) return Math.ceil(totalBlocos * 0.5);
+  if (peso === 2) return Math.max(1, Math.round(totalBlocos * 0.3));
+  return Math.max(1, Math.round(totalBlocos * 0.2));
+}
+
+export function resolverAnunciosDoArtigo(
+  blocos: Bloco[],
+  todosAnuncios: Anuncio[],
+): Record<string, Anuncio | null> {
+  const blocosAnuncio = blocos.filter((b): b is Extract<Bloco, { tipo: "anuncio" }> => b.tipo === "anuncio");
+  const total = blocosAnuncio.length;
+  const resultado: Record<string, Anuncio | null> = {};
+  const contagem: Record<string, number> = {};
+  let ultimoComercialId: string | null = null;
+  let ultimoSocialId: string | null = null;
+
+  const sociais = todosAnuncios.filter((a) => a.ativo && a.social);
+
+  for (const b of blocosAnuncio) {
+    const formatoBloco = b.formato ?? "barra";
+    const permitidos = todosAnuncios.filter(
+      (a) => a.ativo && !a.social && (b.anuncios.length === 0 || b.anuncios.includes(a.id)),
+    );
+
+    let elegiveis = permitidos.filter((a) => {
+      const peso = (a.peso ?? (a.destaque ? 2 : 1)) as PesoAnuncio;
+      const teto = calcularTetoArtigo(total, peso);
+      const qtd = contagem[a.id] ?? 0;
+      const naoConsecutivo = total === 1 || a.id !== ultimoComercialId;
+      return qtd < teto && naoConsecutivo;
+    });
+
+    let escolhido: Anuncio | null = null;
+    if (elegiveis.length > 0) {
+      escolhido = sortearAnuncio(elegiveis);
+    }
+
+    if (!escolhido) {
+      const sociaisDoFormato = sociais.filter((s) => !s.formato || s.formato === formatoBloco);
+      const poolSocial = sociaisDoFormato.length > 0 ? sociaisDoFormato : sociais;
+      const sociaisElegiveis = poolSocial.filter((s) => poolSocial.length <= 1 || s.id !== ultimoSocialId);
+
+      if (sociaisElegiveis.length > 0) {
+        escolhido = sortearAnuncio(sociaisElegiveis);
+        if (escolhido) ultimoSocialId = escolhido.id;
+      } else if (permitidos.length > 0) {
+        escolhido = sortearAnuncio(permitidos);
+      }
+    }
+
+    if (escolhido && !escolhido.social) {
+      contagem[escolhido.id] = (contagem[escolhido.id] ?? 0) + 1;
+      ultimoComercialId = escolhido.id;
+    }
+
+    resultado[b.id] = escolhido;
+  }
+
+  return resultado;
+}
+
 /* ----------------------------- Blog ----------------------------- */
 
 /** Texto puro de um artigo (títulos + parágrafos), usado na leitura estimada e no Vini. */
@@ -420,372 +484,3 @@ export function artigoPorSlug(d: HubData, slug: string) {
 export function artigosAtivos(d: HubData) {
   return (d.artigos ?? []).filter((a) => a.ativo);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
